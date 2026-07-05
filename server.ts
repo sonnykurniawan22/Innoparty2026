@@ -113,7 +113,7 @@ async function startServer() {
       }
 
       // 3. Save to Google Sheets
-      const timestamp = new Date().toLocaleString('id-ID');
+      const timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
       
       const targetSheetId = spreadsheetId || process.env.GOOGLE_SPREADSHEET_ID;
       
