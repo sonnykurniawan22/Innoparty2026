@@ -77,7 +77,16 @@ function PublicForm() {
         body: formData,
       });
       
-      const data = await res.json();
+      let data;
+      const text = await res.text();
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(text.includes('not be found') || text.includes('404')
+          ? 'API Backend tidak ditemukan. Jika di deploy ke Vercel, pastikan Express server sudah dikonfigurasi sebagai Serverless Function.'
+          : 'Server mengembalikan respons yang tidak valid.');
+      }
+
       if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan');
       
       setStep('success');
