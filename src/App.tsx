@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route, Link, useSearchParams, useNavigate } from
 import React, { useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, CheckCircle2, ChevronRight, Loader2, Trophy, Settings, Brain, Lightbulb, Bot, Copy, Check, Lock } from 'lucide-react';
+import { Camera, CheckCircle2, ChevronRight, Loader2, Trophy, Settings, Brain, Lightbulb, Bot, Copy, Check, Lock, QrCode, Download, X } from 'lucide-react';
+import QRCode from 'qrcode';
 
 const QUIZ_BANK = [
   { question: "Negara mana yang memenangkan Piala Dunia 2022?", options: ["Prancis", "Argentina", "Brasil", "Kroasia"], answer: 1 },
@@ -413,17 +414,51 @@ function PublicForm() {
 function AdminPanel() {
   const [copiedQCC, setCopiedQCC] = useState(false);
   const [copiedSS, setCopiedSS] = useState(false);
+  const [copiedGeneral, setCopiedGeneral] = useState(false);
+
+  const [activeQR, setActiveQR] = useState<{ url: string; label: string } | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   const copyLink = (category: string) => {
-    const link = `${window.location.origin}/?category=${category}`;
+    const link = category === 'Umum' ? window.location.origin : `${window.location.origin}/?category=${category}`;
     navigator.clipboard.writeText(link);
     if (category === 'QCC') {
       setCopiedQCC(true);
       setTimeout(() => setCopiedQCC(false), 2000);
-    } else {
+    } else if (category === 'SS') {
       setCopiedSS(true);
       setTimeout(() => setCopiedSS(false), 2000);
+    } else {
+      setCopiedGeneral(true);
+      setTimeout(() => setCopiedGeneral(false), 2000);
     }
+  };
+
+  const showQR = async (label: string, url: string) => {
+    try {
+      const dataUrl = await QRCode.toDataURL(url, {
+        width: 512,
+        margin: 4,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      });
+      setQrDataUrl(dataUrl);
+      setActiveQR({ url, label });
+    } catch (err) {
+      console.error('Error generating QR Code:', err);
+    }
+  };
+
+  const downloadQR = () => {
+    if (!qrDataUrl || !activeQR) return;
+    const a = document.createElement('a');
+    a.href = qrDataUrl;
+    a.download = `QR-Absensi-Innoparty-${activeQR.label}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   return (
@@ -433,42 +468,87 @@ function AdminPanel() {
         
         <div className="text-left bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 space-y-4 mb-8 shadow-inner">
           <div>
-            <h3 className="font-semibold text-slate-800 mb-3">Link Absensi (Kategori Terkunci)</h3>
+            <h3 className="font-semibold text-slate-800 mb-3">Link & QR Absensi</h3>
             <div className="space-y-3">
+              {/* QCC */}
               <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl">
-                <div>
-                  <div className="font-medium text-slate-900">QCC</div>
-                  <div className="text-xs text-slate-500 font-mono truncate max-w-[200px]">{window.location.origin}/?category=QCC</div>
+                <div className="min-w-0 flex-1 pr-2">
+                  <div className="font-medium text-slate-900">Kategori: QCC</div>
+                  <div className="text-xs text-slate-500 font-mono truncate">{window.location.origin}/?category=QCC</div>
                 </div>
-                <button 
-                  onClick={() => copyLink('QCC')}
-                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                  title="Copy QCC Link"
-                >
-                  {copiedQCC ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
-                </button>
+                <div className="flex gap-1.5 shrink-0">
+                  <button 
+                    onClick={() => copyLink('QCC')}
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                    title="Salin Link QCC"
+                  >
+                    {copiedQCC ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
+                  </button>
+                  <button 
+                    onClick={() => showQR('QCC', `${window.location.origin}/?category=QCC`)}
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-slate-600"
+                    title="Tampilkan QR Code QCC"
+                  >
+                    <QrCode className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
+
+              {/* SS */}
               <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl">
-                <div>
-                  <div className="font-medium text-slate-900">SS</div>
-                  <div className="text-xs text-slate-500 font-mono truncate max-w-[200px]">{window.location.origin}/?category=SS</div>
+                <div className="min-w-0 flex-1 pr-2">
+                  <div className="font-medium text-slate-900">Kategori: SS</div>
+                  <div className="text-xs text-slate-500 font-mono truncate">{window.location.origin}/?category=SS</div>
                 </div>
-                <button 
-                  onClick={() => copyLink('SS')}
-                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                  title="Copy SS Link"
-                >
-                  {copiedSS ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
-                </button>
+                <div className="flex gap-1.5 shrink-0">
+                  <button 
+                    onClick={() => copyLink('SS')}
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                    title="Salin Link SS"
+                  >
+                    {copiedSS ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
+                  </button>
+                  <button 
+                    onClick={() => showQR('SS', `${window.location.origin}/?category=SS`)}
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-slate-600"
+                    title="Tampilkan QR Code SS"
+                  >
+                    <QrCode className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Umum */}
+              <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl">
+                <div className="min-w-0 flex-1 pr-2">
+                  <div className="font-medium text-slate-900">Link Umum (Pilih Sendiri)</div>
+                  <div className="text-xs text-slate-500 font-mono truncate">{window.location.origin}</div>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  <button 
+                    onClick={() => copyLink('Umum')}
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                    title="Salin Link Umum"
+                  >
+                    {copiedGeneral ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
+                  </button>
+                  <button 
+                    onClick={() => showQR('Umum', window.location.origin)}
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-slate-600"
+                    title="Tampilkan QR Code Umum"
+                  >
+                    <QrCode className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
             <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-              Bagikan link di atas agar pengguna otomatis masuk dengan kategori yang sudah dipilih, sehingga meminimalisir kesalahan.
+              Bagikan link atau QR Code di atas untuk mengarahkan pengguna ke form absensi. Penggunaan link kategori terkunci meminimalisir kesalahan input kategori.
             </p>
           </div>
         </div>
 
-        <div className="text-left bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 space-y-3 mb-8 shadow-inner overflow-y-auto max-h-[40vh]">
+        <div className="text-left bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 space-y-3 mb-8 shadow-inner overflow-y-auto max-h-[25vh]">
           <p>Aplikasi menggunakan <strong>Google Cloud Service Account</strong> untuk menyimpan data.</p>
           <div className="mt-4">
             <p className="font-semibold text-slate-700 mb-2">1. Isi Secrets di Settings:</p>
@@ -496,6 +576,60 @@ function AdminPanel() {
           <ChevronRight className="w-4 h-4 rotate-180" /> Kembali ke Form Absensi
         </Link>
       </div>
+
+      {/* QR Code Preview Modal */}
+      <AnimatePresence>
+        {activeQR && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl p-6 shadow-2xl max-w-sm w-full border border-slate-100 relative text-center"
+            >
+              <button 
+                onClick={() => setActiveQR(null)}
+                className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 className="text-xl font-bold text-slate-900 mb-1">QR Code Absensi</h3>
+              <span className="px-3 py-1 text-xs font-semibold bg-red-50 text-red-600 rounded-full border border-red-100 inline-block mb-4">
+                Kategori: {activeQR.label}
+              </span>
+
+              <div className="bg-white p-2 border-4 border-black mb-4 inline-block rounded-none shadow-md">
+                <img 
+                  src={qrDataUrl} 
+                  alt={`QR Code Absensi ${activeQR.label}`}
+                  className="w-48 h-48 mx-auto rounded-none bg-white"
+                />
+              </div>
+
+              <p className="text-xs text-slate-500 break-all mb-5 font-mono max-w-[280px] mx-auto bg-slate-50 p-2 rounded-lg border border-slate-100">
+                {activeQR.url}
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveQR(null)}
+                  className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors text-sm"
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={downloadQR}
+                  className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-500 text-white font-medium rounded-xl transition-all shadow-md shadow-red-200 hover:shadow-lg inline-flex items-center justify-center gap-1.5 text-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Unduh QR</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
