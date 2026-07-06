@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Link, useSearchParams, useNavigate } from
 import React, { useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, CheckCircle2, ChevronRight, Loader2, Trophy, Settings, Brain, Lightbulb, Bot, Copy, Check, Lock, QrCode, Download, X } from 'lucide-react';
+import { Camera, CheckCircle2, ChevronRight, Loader2, Trophy, Settings, Brain, Lightbulb, Bot, Copy, Check, Lock, QrCode, Download, X, Maximize2, Minimize2 } from 'lucide-react';
 import QRCode from 'qrcode';
 
 const QUIZ_BANK = [
@@ -418,6 +418,7 @@ function AdminPanel() {
 
   const [activeQR, setActiveQR] = useState<{ url: string; label: string } | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [isFullscreenQR, setIsFullscreenQR] = useState(false);
 
   const copyLink = (category: string) => {
     const link = category === 'Umum' ? window.location.origin : `${window.location.origin}/?category=${category}`;
@@ -579,7 +580,7 @@ function AdminPanel() {
 
       {/* QR Code Preview Modal */}
       <AnimatePresence>
-        {activeQR && (
+        {activeQR && !isFullscreenQR && (
           <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -588,7 +589,7 @@ function AdminPanel() {
               className="bg-white rounded-3xl p-6 shadow-2xl max-w-sm w-full border border-slate-100 relative text-center"
             >
               <button 
-                onClick={() => setActiveQR(null)}
+                onClick={() => { setActiveQR(null); setIsFullscreenQR(false); }}
                 className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -599,13 +600,27 @@ function AdminPanel() {
                 Kategori: {activeQR.label}
               </span>
 
-              <div className="bg-white p-2 border-4 border-black mb-4 inline-block rounded-none shadow-md">
+              <div 
+                className="bg-white p-2 border-4 border-black mb-1 inline-block rounded-none shadow-md cursor-pointer group relative overflow-hidden"
+                onClick={() => setIsFullscreenQR(true)}
+                title="Klik untuk memperbesar / Layar Penuh"
+              >
                 <img 
                   src={qrDataUrl} 
                   alt={`QR Code Absensi ${activeQR.label}`}
-                  className="w-48 h-48 mx-auto rounded-none bg-white"
+                  className="w-48 h-48 mx-auto rounded-none bg-white transition-all group-hover:scale-105"
                 />
+                <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="bg-slate-900/90 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium shadow-lg">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    Layar Penuh
+                  </span>
+                </div>
               </div>
+
+              <p className="text-[11px] text-slate-400 mb-4 hover:text-slate-600 transition-colors cursor-pointer" onClick={() => setIsFullscreenQR(true)}>
+                💡 Klik gambar QR untuk tampilan Layar Penuh
+              </p>
 
               <p className="text-xs text-slate-500 break-all mb-5 font-mono max-w-[280px] mx-auto bg-slate-50 p-2 rounded-lg border border-slate-100">
                 {activeQR.url}
@@ -613,7 +628,7 @@ function AdminPanel() {
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => setActiveQR(null)}
+                  onClick={() => { setActiveQR(null); setIsFullscreenQR(false); }}
                   className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors text-sm"
                 >
                   Tutup
@@ -626,6 +641,62 @@ function AdminPanel() {
                   <span>Unduh QR</span>
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen Giant QR View */}
+      <AnimatePresence>
+        {activeQR && isFullscreenQR && (
+          <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center p-6 z-[100] overflow-hidden select-none">
+            {/* Background absolute click to exit */}
+            <div className="absolute inset-0 cursor-zoom-out" onClick={() => setIsFullscreenQR(false)} />
+            
+            <button 
+              onClick={() => setIsFullscreenQR(false)}
+              className="absolute top-6 right-6 p-3.5 bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white rounded-full transition-all border border-slate-800 shadow-xl z-10"
+              title="Keluar Layar Penuh"
+            >
+              <Minimize2 className="w-6 h-6" />
+            </button>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 max-w-2xl w-full"
+            >
+              <h2 className="text-2xl md:text-3xl font-black text-white tracking-widest uppercase">
+                PINDAI QR UNTUK ABSENSI
+              </h2>
+              
+              <div className="px-5 py-2 text-sm md:text-base font-bold bg-red-600 text-white rounded-full shadow-lg border border-red-500 uppercase">
+                Kategori: {activeQR.label}
+              </div>
+
+              {/* Giant high-contrast QR with solid thick black border */}
+              <div 
+                className="bg-white p-4 md:p-6 border-8 border-black shadow-2xl inline-block rounded-none cursor-zoom-out"
+                onClick={() => setIsFullscreenQR(false)}
+              >
+                <img 
+                  src={qrDataUrl} 
+                  alt={`QR Code Absensi ${activeQR.label}`}
+                  className="w-[60vmin] h-[60vmin] min-w-[280px] min-h-[280px] max-w-[550px] max-h-[550px] rounded-none bg-white object-contain"
+                />
+              </div>
+
+              <p className="text-[11px] md:text-xs text-slate-500 break-all max-w-md bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 font-mono select-all">
+                {activeQR.url}
+              </p>
+
+              <button
+                onClick={() => setIsFullscreenQR(false)}
+                className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 font-medium rounded-xl transition-colors text-sm border border-slate-800"
+              >
+                Kembali ke Detail
+              </button>
             </motion.div>
           </div>
         )}
