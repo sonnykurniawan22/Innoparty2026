@@ -1,6 +1,6 @@
 {
-  "name": "World Cup Absensi",
-  "description": "Aplikasi absensi dengan mini kuis World Cup",
+  "name": "Innoparty 2026",
+  "description": "Aplikasi absensi dengan mini kuis Innoparty 2026",
   "requestFramePermissions": [
     "camera"
   ],

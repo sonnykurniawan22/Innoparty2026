@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router';
+import { BrowserRouter, Routes, Route, Link, useSearchParams, useNavigate } from 'react-router';
 import React, { useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, CheckCircle2, ChevronRight, Loader2, Trophy, Settings, Brain, Lightbulb, Bot } from 'lucide-react';
+import { Camera, CheckCircle2, ChevronRight, Loader2, Trophy, Settings, Brain, Lightbulb, Bot, Copy, Check, Lock } from 'lucide-react';
 
 const QUIZ_BANK = [
   { question: "Negara mana yang memenangkan Piala Dunia 2022?", options: ["Prancis", "Argentina", "Brasil", "Kroasia"], answer: 1 },
@@ -23,12 +23,18 @@ const QUIZ_BANK = [
 ];
 
 function PublicForm() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const urlCategory = searchParams.get('category');
+  const initialCategory = urlCategory === 'SS' ? 'SS' : (urlCategory === 'QCC' ? 'QCC' : 'QCC');
+  
   const [step, setStep] = useState<'quiz' | 'camera' | 'submitting' | 'success'>('quiz');
   const [quizQuestion, setQuizQuestion] = useState(() => QUIZ_BANK[Math.floor(Math.random() * QUIZ_BANK.length)]);
   const [score, setScore] = useState(0);
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('');
   const [nip, setNip] = useState('');
+  const [category, setCategory] = useState(initialCategory);
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   
   const webcamRef = useRef<Webcam>(null);
@@ -36,6 +42,18 @@ function PublicForm() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminLoginError, setAdminLoginError] = useState('');
+
+  const handleAdminLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminPassword === "Inn0party2025!!!!!!!!") {
+      navigate('/admin');
+    } else {
+      setAdminLoginError("Password salah!");
+    }
+  };
 
   const handleAnswer = (selectedIndex: number) => {
     if (selectedIndex === quizQuestion.answer) {
@@ -49,9 +67,40 @@ function PublicForm() {
   const capturePhoto = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
-      fetch(imageSrc)
-        .then(res => res.blob())
-        .then(blob => setImageBlob(blob));
+      const img = new Image();
+      img.src = imageSrc;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxWidth = 400;
+        const maxHeight = 300;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              setImageBlob(blob);
+            }
+          }, 'image/jpeg', 0.65);
+        }
+      };
     }
   }, [webcamRef]);
 
@@ -69,7 +118,7 @@ function PublicForm() {
       formData.append('name', name);
       formData.append('department', department);
       formData.append('nip', nip);
-      formData.append('score', `${score} / 1`);
+      formData.append('category', category);
       formData.append('image', imageBlob, 'selfie.jpg');
       
       const res = await fetch('/api/submit-attendance', {
@@ -104,12 +153,33 @@ function PublicForm() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-red-600/10 blur-[100px] rounded-full pointer-events-none" />
       
       <div className="max-w-md w-full bg-white/80 backdrop-blur-xl border border-slate-100 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px] relative z-10">
-        <div className="absolute top-4 right-4 z-20">
-          <Link to="/admin" className="text-slate-500 hover:text-red-500 transition">
-            <Settings className="w-5 h-5" />
-          </Link>
-        </div>
         
+        <div className="absolute top-4 right-4 z-20">
+          <button onClick={() => { setShowAdminLogin(!showAdminLogin); setAdminLoginError(''); setAdminPassword(''); }} className="text-slate-400 hover:text-red-500 transition" title="Admin Login">
+            <Lock className="w-5 h-5" />
+          </button>
+        </div>
+
+        {showAdminLogin && (
+          <div className="absolute top-14 right-4 z-30 bg-white shadow-xl border border-slate-100 rounded-xl p-4 w-64 animate-in fade-in slide-in-from-top-2">
+            <form onSubmit={handleAdminLoginSubmit}>
+              <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase">Password Admin</label>
+              <input 
+                type="password" 
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm mb-2 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                placeholder="********"
+                autoFocus
+              />
+              {adminLoginError && <p className="text-xs text-red-500 mb-2">{adminLoginError}</p>}
+              <button type="submit" className="w-full bg-red-600 text-white font-medium rounded-lg text-sm py-2 hover:bg-red-700 transition">
+                Login
+              </button>
+            </form>
+          </div>
+        )}
+
         <div className="px-6 py-6 border-b border-slate-100 flex flex-col items-center justify-center gap-2">
           <div className="flex items-center gap-1">
             <Lightbulb className="w-8 h-8 text-yellow-500" />
@@ -170,13 +240,19 @@ function PublicForm() {
                 className="flex-1 flex flex-col h-full"
               >
                 <div className="text-center mb-6">
-                  <p className="text-slate-600 text-sm">
-                    {score === 1 ? (
-                      <span className="text-green-400 flex items-center justify-center gap-1"><CheckCircle2 className="w-4 h-4" /> Jawaban Benar!</span>
-                    ) : (
-                      <span className="text-slate-600">Absensi</span>
-                    )}
-                  </p>
+                  {score === 1 ? (
+                    <p className="text-green-600 bg-green-50 px-3 py-2 rounded-xl inline-flex items-center justify-center gap-1.5 font-medium border border-green-200 shadow-sm mx-auto">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      <span>Jawaban Benar!</span>
+                    </p>
+                  ) : (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 shadow-sm flex flex-col items-center gap-1 max-w-sm mx-auto">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-red-500">Jawaban Kurang Tepat</span>
+                      <p className="text-xs font-medium">
+                        Jawaban yang benar: <span className="font-bold underline text-red-800">{quizQuestion.options[quizQuestion.answer]}</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {submitError && (
@@ -218,6 +294,8 @@ function PublicForm() {
                       className="w-full px-5 py-4 rounded-2xl bg-slate-100 border border-slate-200 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all"
                     />
                   </div>
+
+
 
                   <div className="flex-1 flex flex-col">
                     <label className="block text-sm font-medium text-slate-600 mb-2 uppercase tracking-wider text-xs">Foto Selfie (Live Camera)</label>
@@ -333,11 +411,64 @@ function PublicForm() {
 }
 
 function AdminPanel() {
+  const [copiedQCC, setCopiedQCC] = useState(false);
+  const [copiedSS, setCopiedSS] = useState(false);
+
+  const copyLink = (category: string) => {
+    const link = `${window.location.origin}/?category=${category}`;
+    navigator.clipboard.writeText(link);
+    if (category === 'QCC') {
+      setCopiedQCC(true);
+      setTimeout(() => setCopiedQCC(false), 2000);
+    } else {
+      setCopiedSS(true);
+      setTimeout(() => setCopiedSS(false), 2000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-900">
       <div className="max-w-md w-full bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden p-8 text-center">
         <h2 className="text-3xl font-display font-bold mb-6 text-slate-900 tracking-tight">Pengaturan Admin</h2>
-        <div className="text-left bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 space-y-3 mb-8 shadow-inner overflow-y-auto max-h-[60vh]">
+        
+        <div className="text-left bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 space-y-4 mb-8 shadow-inner">
+          <div>
+            <h3 className="font-semibold text-slate-800 mb-3">Link Absensi (Kategori Terkunci)</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl">
+                <div>
+                  <div className="font-medium text-slate-900">QCC</div>
+                  <div className="text-xs text-slate-500 font-mono truncate max-w-[200px]">{window.location.origin}/?category=QCC</div>
+                </div>
+                <button 
+                  onClick={() => copyLink('QCC')}
+                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                  title="Copy QCC Link"
+                >
+                  {copiedQCC ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
+                </button>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl">
+                <div>
+                  <div className="font-medium text-slate-900">SS</div>
+                  <div className="text-xs text-slate-500 font-mono truncate max-w-[200px]">{window.location.origin}/?category=SS</div>
+                </div>
+                <button 
+                  onClick={() => copyLink('SS')}
+                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                  title="Copy SS Link"
+                >
+                  {copiedSS ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+              Bagikan link di atas agar pengguna otomatis masuk dengan kategori yang sudah dipilih, sehingga meminimalisir kesalahan.
+            </p>
+          </div>
+        </div>
+
+        <div className="text-left bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 space-y-3 mb-8 shadow-inner overflow-y-auto max-h-[40vh]">
           <p>Aplikasi menggunakan <strong>Google Cloud Service Account</strong> untuk menyimpan data.</p>
           <div className="mt-4">
             <p className="font-semibold text-slate-700 mb-2">1. Isi Secrets di Settings:</p>
