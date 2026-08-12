@@ -112,11 +112,21 @@ export async function updateContestSettings(settings: Partial<ContestSettings>) 
 
 export function subscribeParticipants(callback: (participants: Participant[]) => void) {
   const q = query(collection(db, PARTICIPANTS_COL));
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, async (snapshot) => {
+    if (snapshot.empty) {
+      for (const item of INITIAL_PARTICIPANTS) {
+        await addParticipant(item);
+      }
+      return;
+    }
     const list: Participant[] = [];
     snapshot.forEach((d) => {
       list.push({ id: d.id, ...d.data() } as Participant);
     });
+    // Cache locally for zero-latency instant startup
+    try {
+      localStorage.setItem('cached_participants_v1', JSON.stringify(list));
+    } catch (e) {}
     callback(list);
   }, (err) => {
     console.error("Error subscribing to participants:", err);
@@ -184,7 +194,13 @@ export async function seedInitialDataIfEmpty() {
 
 export function subscribeMasterCriteria(callback: (criteria: Criterion[]) => void) {
   const q = query(collection(db, CRITERIA_COL));
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, async (snapshot) => {
+    if (snapshot.empty) {
+      for (const item of DEFAULT_CRITERIA) {
+        await setDoc(doc(db, CRITERIA_COL, item.id), item);
+      }
+      return;
+    }
     const list: Criterion[] = [];
     snapshot.forEach((d) => {
       list.push({ id: d.id, ...d.data() } as Criterion);

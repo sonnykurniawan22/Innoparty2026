@@ -244,7 +244,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                   const isJuri3Unlocked = isJuri3RevealedForCategory(getParticipantCategoryKey(item.participant), settings || juri3Revealed);
                   return (
                     <tr 
-                      key={item.participant.id} 
+                      key={item.participant.id || `row-${index}`} 
                       className="hover:bg-surface-container-low transition-colors group"
                     >
                       <td className="py-4 px-6 w-16">
@@ -319,11 +319,11 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
 
           {/* MOBILE CARDS VIEW */}
           <div className="block md:hidden divide-y divide-outline-variant border-t border-outline-variant">
-            {rankedData.slice(3).map((item) => {
+            {rankedData.slice(3).map((item, index) => {
               const isJuri3Unlocked = isJuri3RevealedForCategory(getParticipantCategoryKey(item.participant), settings || juri3Revealed);
               return (
                 <div 
-                  key={item.participant.id}
+                  key={item.participant.id || `card-${index}`}
                   className="p-4 space-y-3 bg-surface-container-lowest"
                 >
                   <div className="flex items-start justify-between gap-3">

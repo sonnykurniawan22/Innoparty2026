@@ -33,7 +33,7 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
   const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const isLockedMode = !!(initialJudgeId && initialParticipantId);
+  const isLockedJudge = !!initialJudgeId;
 
   // Update selected judge if passed via prop
   useEffect(() => {
@@ -143,51 +143,111 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
         </div>
       </div>
 
-      {!isLockedMode ? (
-        <div className="bg-white border border-slate-200 rounded-3xl shadow-xl p-12 text-center max-w-lg mx-auto mt-12">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-2xl font-black text-red-900 uppercase mb-2">AKSES DITOLAK</h3>
-          <p className="text-red-700 font-medium">Harap scan QR Code yang disediakan oleh panitia untuk mengakses form penilaian ini.</p>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-3xl shadow-xl p-6 sm:p-8 space-y-8">
-          {/* Step 1: Locked Display */}
-          <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <ShieldCheck className="w-24 h-24 text-emerald-900" />
-            </div>
-            <div className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" /> AKSES JURI KHUSUS
-            </div>
-            {selectedParticipant ? (
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-black uppercase text-emerald-800">
-                    {selectedParticipant.teamName}
-                  </span>
-                  <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2.5 py-0.5 rounded-full">
-                    {selectedParticipant.stream === 'SS' ? 'SS' : `QCC • ${selectedParticipant.levelCategory} Class`}
-                  </span>
+      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-3xl shadow-xl p-6 sm:p-8 space-y-8">
+        
+        {/* Step 1: Selection Juri & Peserta */}
+        <div className="space-y-6">
+          <h3 className="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2 border-b border-slate-100 pb-3">
+            <UserCheck className="w-5 h-5 text-red-600" />
+            <span>1. IDENTITAS JURI & PESERTA</span>
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            {/* Juri Selection */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <label className="block text-xs font-black uppercase text-slate-500 mb-2">
+                ROLE / POSISI JURI
+              </label>
+              {isLockedJudge ? (
+                <div className="flex items-center gap-2 bg-emerald-100 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl font-black text-sm">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <span>JURI {selectedJudgeId} (AKSES TERKUNCI)</span>
                 </div>
-                <h3 className="text-2xl font-black text-slate-900">{selectedParticipant.name}</h3>
-                <p className="text-sm font-bold text-slate-700 mt-1 italic">"{selectedParticipant.projectTitle}"</p>
-                
-                {/* Juri Badge */}
-                <div className="mt-4 inline-flex items-center gap-2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-md">
-                   <ShieldCheck className="w-4 h-4" /> JURI {initialJudgeId}
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {[1, 2, 3].map((jId) => (
+                    <button
+                      key={jId}
+                      type="button"
+                      onClick={() => setSelectedJudgeId(jId as 1 | 2 | 3)}
+                      className={`py-2.5 rounded-xl font-black text-xs uppercase transition-all ${
+                        selectedJudgeId === jId
+                          ? 'bg-red-600 text-white shadow-sm'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      Juri {jId}
+                    </button>
+                  ))}
                 </div>
-                
-                {existingScore && (
-                  <div className="mt-4 ml-2 inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg text-xs font-black border border-emerald-200">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Telah Dinilai (Skor: {existingScore.totalScore})
-                  </div>
+              )}
+            </div>
+
+            {/* Filter Category & Participant Selector */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <label className="block text-xs font-black uppercase text-slate-500 mb-2">
+                PILIH TIM PESERTA
+              </label>
+              <select
+                value={selectedParticipantId}
+                onChange={(e) => setSelectedParticipantId(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white font-bold text-sm text-slate-900 focus:ring-2 focus:ring-red-500 focus:outline-none"
+              >
+                {participants.length === 0 ? (
+                  <option value="">Memuat peserta...</option>
+                ) : (
+                  participants.map((p) => {
+                    const scoredByThisJudge = scores.some(
+                      (s) => s.participantId === p.id && s.judgeId === selectedJudgeId
+                    );
+                    return (
+                      <option key={p.id} value={p.id}>
+                        {p.name} • {p.teamName} ({p.stream === 'SS' ? 'SS' : `${p.levelCategory}`}) {scoredByThisJudge ? '✓ [Sudah Dinilai]' : ''}
+                      </option>
+                    );
+                  })
                 )}
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500 font-medium">Memuat data peserta...</p>
-            )}
+              </select>
+            </div>
+
           </div>
+
+          {/* Active Participant Preview Card */}
+          {selectedParticipant && (
+            <div className="bg-gradient-to-r from-red-50 to-slate-50 border border-red-200 rounded-2xl p-5 relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-black uppercase text-red-700 bg-red-100 px-2.5 py-0.5 rounded-full border border-red-200">
+                      {selectedParticipant.teamName}
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-slate-200 text-slate-800 px-2.5 py-0.5 rounded-full">
+                      {selectedParticipant.stream === 'SS' ? 'SS' : `QCC • ${selectedParticipant.levelCategory} Class`}
+                    </span>
+                  </div>
+                  <h4 className="text-xl font-black text-slate-900">{selectedParticipant.name}</h4>
+                  <p className="text-xs font-bold text-slate-600 mt-0.5 italic">"{selectedParticipant.projectTitle}"</p>
+                </div>
+
+                <div className="shrink-0 flex items-center gap-2">
+                  {existingScore ? (
+                    <div className="bg-emerald-100 border border-emerald-300 text-emerald-800 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>SUDAH DINILAI (SKOR: {existingScore.totalScore})</span>
+                    </div>
+                  ) : (
+                    <div className="bg-amber-100 border border-amber-300 text-amber-900 px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5">
+                      <Flame className="w-4 h-4 text-amber-600" />
+                      <span>BELUM DINILAI</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
 
           {/* Step 2: Criteria Sliders */}
         <div className="space-y-6">
@@ -445,7 +505,6 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
 
       
         </form>
-      )}
     </div>
   );
 };
