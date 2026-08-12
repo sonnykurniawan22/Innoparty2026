@@ -1,9 +1,7 @@
 {
   "name": "Innoparty 2026",
   "description": "Sistem Kontes Inovasi & Penilaian Juri Real-time dengan Live Podium (Innoparty 2026)",
-  "requestFramePermissions": [
-    "camera"
-  ],
+  "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
