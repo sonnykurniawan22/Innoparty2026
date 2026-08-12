@@ -188,7 +188,6 @@ export default function App() {
                 settings={settings}
                 activeCategoryFilter={activeCategoryFilter}
                 setActiveCategoryFilter={setActiveCategoryFilter}
-                podiumAvatars={settings.podiumAvatars}
               />
             </motion.div>
           )}
@@ -262,7 +261,7 @@ export default function App() {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.2 }}
             >
-              <AdminSettings settings={settings} />
+              <AdminSettings settings={settings} participants={participants} scores={scores} />
             </motion.div>
           )}
 

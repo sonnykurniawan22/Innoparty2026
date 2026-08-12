@@ -14,8 +14,8 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
   // Form State for Adding/Editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
-  const [teamName, setTeamName] = useState('');
   const [projectTitle, setProjectTitle] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
   const [categorySelection, setCategorySelection] = useState<'QCC-Rising' | 'QCC-Leading' | 'SS'>('QCC-Rising');
 
   const [isSaving, setIsSaving] = useState(false);
@@ -23,16 +23,16 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
   const resetForm = () => {
     setEditingId(null);
     setName('');
-    setTeamName('');
     setProjectTitle('');
+    setPhotoUrl('');
     setCategorySelection('QCC-Rising');
   };
 
   const handleStartEdit = (p: Participant) => {
     setEditingId(p.id);
     setName(p.name);
-    setTeamName(p.teamName);
     setProjectTitle(p.projectTitle);
+    setPhotoUrl(p.photoUrl || '');
     if (p.stream === 'SS') {
       setCategorySelection('SS');
     } else if (p.levelCategory === 'Leading') {
@@ -44,7 +44,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !teamName.trim() || !projectTitle.trim()) return;
+    if (!name.trim() || !projectTitle.trim()) return;
 
     let levelCategory: LevelCategory = 'Rising';
     let stream: StreamCategory = 'QCC';
@@ -65,18 +65,18 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
       if (editingId) {
         await updateParticipant(editingId, {
           name,
-          teamName,
           projectTitle,
           levelCategory,
-          stream
+          stream,
+          photoUrl
         });
       } else {
         await addParticipant({
           name,
-          teamName,
           projectTitle,
           levelCategory,
-          stream
+          stream,
+          photoUrl
         });
       }
       setIsSaving(false);
@@ -120,7 +120,6 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
 
     const matchesSearch = 
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.teamName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.projectTitle.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -188,20 +187,6 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
 
             <div>
               <label className="block text-xs font-bold text-slate-700  mb-1">
-                Nama Tim / Squad Inovasi:
-              </label>
-              <input
-                type="text"
-                required
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                placeholder="Contoh: FC Striker Inovasi"
-                className="w-full bg-slate-50  border border-slate-200  rounded-xl p-3 font-medium text-slate-900  focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700  mb-1">
                 Judul Project Inovasi:
               </label>
               <textarea
@@ -211,6 +196,19 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
                 onChange={(e) => setProjectTitle(e.target.value)}
                 placeholder="Contoh: Pengurangan Downtime Mesin dengan AI Sensor"
                 className="w-full bg-slate-50  border border-slate-200  rounded-xl p-3 text-xs font-medium text-slate-900  focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700  mb-1">
+                Foto Profil Peserta (URL):
+              </label>
+              <input
+                type="url"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                placeholder="https://example.com/photo.jpg (Opsional)"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
             </div>
 
@@ -312,8 +310,18 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
                 {filteredList.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="py-3.5 px-3">
-                      <div className="font-bold text-slate-900">{p.name}</div>
-                      <div className="text-[11px] text-indigo-600 font-bold">{p.teamName}</div>
+                      <div className="flex items-center gap-3">
+                        {p.photoUrl ? (
+                          <img src={p.photoUrl} alt={p.name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 border border-slate-300">
+                            <Users className="w-4 h-4 text-slate-500" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-bold text-slate-900">{p.name}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="py-3.5 px-3 text-slate-600 max-w-xs truncate">
                       {p.projectTitle}

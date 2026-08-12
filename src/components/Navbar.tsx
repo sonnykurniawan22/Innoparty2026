@@ -39,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {activeJudgeId && (
                   <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded flex items-center gap-1 font-extrabold animate-pulse">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    MODE JURI {activeJudgeId} (RESTRICTED)
+                    MODE JURI {activeJudgeId}
                   </span>
                 )}
               </div>
@@ -56,16 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
                 <span>Form Penilaian Khusus Juri {activeJudgeId}</span>
               </div>
-              {onExitJudgeMode && (
-                <button
-                  type="button"
-                  onClick={onExitJudgeMode}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors border border-slate-200"
-                  title="Kembali ke tampilan utama"
-                >
-                  Mode Publik
-                </button>
-              )}
             </div>
           ) : (
             /* Standard Admin / Committee Navigation Tabs */

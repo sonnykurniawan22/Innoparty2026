@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
-import { ContestSettings } from '../types';
+import { ContestSettings, Participant, JudgeScore } from '../types';
 import { updateContestSettings } from '../lib/contestService';
-import { Settings, Lock, Unlock, ShieldAlert, Sparkles, RefreshCw, AlertTriangle, CheckCircle2, Image, Trophy, Medal, Award } from 'lucide-react';
+import { Settings, Lock, Unlock, ShieldAlert, Sparkles, RefreshCw, AlertTriangle, CheckCircle2, Image, Trophy, Medal, Award, FileText } from 'lucide-react';
 
 interface AdminSettingsProps {
   settings: ContestSettings;
+  participants: Participant[];
+  scores: JudgeScore[];
 }
 
-export const AdminSettings: React.FC<AdminSettingsProps> = ({ settings }) => {
+export const AdminSettings: React.FC<AdminSettingsProps> = ({ settings, participants, scores }) => {
   const [eventName, setEventName] = useState(settings.eventName || 'INNOPARTY 2026 - FOOTBALL INNOVATION CHAMPIONSHIP');
   
-  // Podium Avatars State
-  const [rank1Url, setRank1Url] = useState(
-    settings.podiumAvatars?.rank1Url || 'https://drive.google.com/uc?export=view&id=1Nqk3jCqgImxHr2HfZb4NvWqofBO7N0AK'
-  );
-  const [rank2Url, setRank2Url] = useState(
-    settings.podiumAvatars?.rank2Url || 'https://drive.google.com/uc?export=view&id=1Ul03BhQkZaAwqEsCbO1UmQ_xmcXp5B8i'
-  );
-  const [rank3Url, setRank3Url] = useState(
-    settings.podiumAvatars?.rank3Url || 'https://drive.google.com/uc?export=view&id=1HQ2l_Uy0ymzlbfNCYZojRqLmmZLUXXZM'
-  );
-
   const [isUpdating, setIsUpdating] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('ALL');
+
+  const uniqueCategories = Array.from(
+    new Set(participants.map(p => p.stream === 'SS' ? 'SS' : `QCC ${p.levelCategory}`))
+  ).sort();
+
+  const filteredParticipants = filterCategory === 'ALL'
+    ? participants
+    : participants.filter(p => (p.stream === 'SS' ? 'SS' : `QCC ${p.levelCategory}`) === filterCategory);
 
   const getCategoryStatus = (catKey: 'QCC-Rising' | 'QCC-Leading' | 'SS'): boolean => {
     if (settings.juri3RevealedCategories && settings.juri3RevealedCategories[catKey] !== undefined) {
@@ -85,26 +85,6 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ settings }) => {
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       console.error("Error updating event name:", err);
-      setIsUpdating(false);
-    }
-  };
-
-  const handleSaveAvatars = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setIsUpdating(true);
-      await updateContestSettings({
-        podiumAvatars: {
-          rank1Url,
-          rank2Url,
-          rank3Url
-        }
-      });
-      setIsUpdating(false);
-      setSuccessMsg('Master Foto / Avatar Podium Berhasil Diperbarui!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } catch (err) {
-      console.error("Error updating podium avatars:", err);
       setIsUpdating(false);
     }
   };
@@ -263,150 +243,6 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ settings }) => {
 
       </div>
 
-      {/* FEATURE 2: MASTER AVATAR / FOTO PODIUM */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex items-center space-x-3 border-b border-slate-100 pb-4">
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl shrink-0">
-            <Image className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight">
-              MASTER AVATAR / FOTO PODIUM JUARA
-            </h3>
-            <p className="text-xs text-slate-500">
-              Kelola tautan foto/avatar resmi yang akan ditampilkan di posisi Panggung Podium (Juara 1, Juara 2, Juara 3).
-            </p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSaveAvatars} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Juara 1 Avatar */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 flex flex-col items-center text-center">
-              <div className="flex items-center gap-1.5 bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1 rounded-full text-xs font-black uppercase">
-                <Trophy className="w-3.5 h-3.5 text-amber-600" />
-                <span>Champion (Juara 1)</span>
-              </div>
-
-              <div className="w-24 h-24 rounded-full border-4 border-amber-400 overflow-hidden bg-slate-200 flex items-center justify-center shadow-md relative">
-                {rank1Url ? (
-                  <img 
-                    src={rank1Url} 
-                    alt="Preview Juara 1" 
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <Trophy className="w-8 h-8 text-slate-400" />
-                )}
-              </div>
-
-              <div className="w-full space-y-1 text-left">
-                <label className="block text-[11px] font-bold text-slate-700 uppercase">
-                  URL Foto Juara 1:
-                </label>
-                <input
-                  type="text"
-                  value={rank1Url}
-                  onChange={(e) => setRank1Url(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs font-medium text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Juara 2 Avatar */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 flex flex-col items-center text-center">
-              <div className="flex items-center gap-1.5 bg-slate-200 text-slate-800 border border-slate-300 px-3 py-1 rounded-full text-xs font-black uppercase">
-                <Medal className="w-3.5 h-3.5 text-slate-600" />
-                <span>Runner Up (Juara 2)</span>
-              </div>
-
-              <div className="w-24 h-24 rounded-full border-4 border-slate-300 overflow-hidden bg-slate-200 flex items-center justify-center shadow-md relative">
-                {rank2Url ? (
-                  <img 
-                    src={rank2Url} 
-                    alt="Preview Juara 2" 
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <Medal className="w-8 h-8 text-slate-400" />
-                )}
-              </div>
-
-              <div className="w-full space-y-1 text-left">
-                <label className="block text-[11px] font-bold text-slate-700 uppercase">
-                  URL Foto Juara 2:
-                </label>
-                <input
-                  type="text"
-                  value={rank2Url}
-                  onChange={(e) => setRank2Url(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs font-medium text-slate-900 focus:ring-2 focus:ring-slate-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Juara 3 Avatar */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 flex flex-col items-center text-center">
-              <div className="flex items-center gap-1.5 bg-amber-900/10 text-amber-900 border border-amber-800/20 px-3 py-1 rounded-full text-xs font-black uppercase">
-                <Award className="w-3.5 h-3.5 text-amber-800" />
-                <span>3rd Place (Juara 3)</span>
-              </div>
-
-              <div className="w-24 h-24 rounded-full border-4 border-[#CD7F32] overflow-hidden bg-slate-200 flex items-center justify-center shadow-md relative">
-                {rank3Url ? (
-                  <img 
-                    src={rank3Url} 
-                    alt="Preview Juara 3" 
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <Award className="w-8 h-8 text-slate-400" />
-                )}
-              </div>
-
-              <div className="w-full space-y-1 text-left">
-                <label className="block text-[11px] font-bold text-slate-700 uppercase">
-                  URL Foto Juara 3:
-                </label>
-                <input
-                  type="text"
-                  value={rank3Url}
-                  onChange={(e) => setRank3Url(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs font-medium text-slate-900 focus:ring-2 focus:ring-[#CD7F32] focus:outline-none"
-                />
-              </div>
-            </div>
-
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <button
-              type="submit"
-              disabled={isUpdating}
-              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition-all flex items-center gap-2 active:scale-95"
-            >
-              <span>Simpan Master Avatar Podium</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
       {/* EVENT CONFIG CARD */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
         <h3 className="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -435,6 +271,70 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ settings }) => {
             Simpan Nama Event
           </button>
         </form>
+      </div>
+
+      {/* FEATURE 3: DETAIL PENILAIAN PESERTA (TABEL) */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-3">
+          <h3 className="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+            <FileText className="w-5 h-5 text-indigo-600" />
+            <span>DETAIL PENILAIAN PESERTA & KATEGORI</span>
+          </h3>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="w-full sm:w-auto px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="ALL">Semua Kategori</option>
+            {uniqueCategories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[600px]">
+            <thead>
+              <tr className="bg-slate-100 border-y border-slate-200 text-slate-700 text-xs uppercase tracking-wider font-bold">
+                <th className="py-3 px-4">Nama Tim / Peserta</th>
+                <th className="py-3 px-4">Kategori</th>
+                <th className="py-3 px-4 text-center">Juri 1</th>
+                <th className="py-3 px-4 text-center">Juri 2</th>
+                <th className="py-3 px-4 text-center">Juri 3</th>
+                <th className="py-3 px-4 text-center text-indigo-700">Total Skor</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 text-sm">
+              {filteredParticipants.map(p => {
+                const j1 = scores.find(s => s.participantId === p.id && s.judgeId === 1);
+                const j2 = scores.find(s => s.participantId === p.id && s.judgeId === 2);
+                const j3 = scores.find(s => s.participantId === p.id && s.judgeId === 3);
+                const total = (j1?.totalScore || 0) + (j2?.totalScore || 0) + (j3?.totalScore || 0);
+
+                return (
+                  <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="font-bold text-slate-900">{p.name}</div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider">
+                        {p.stream === 'SS' ? 'SS' : `QCC ${p.levelCategory}`}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center font-semibold text-slate-700">{j1 ? j1.totalScore : '-'}</td>
+                    <td className="py-3 px-4 text-center font-semibold text-slate-700">{j2 ? j2.totalScore : '-'}</td>
+                    <td className="py-3 px-4 text-center font-semibold text-slate-700">{j3 ? j3.totalScore : '-'}</td>
+                    <td className="py-3 px-4 text-center font-black text-indigo-700 bg-indigo-50/50">{total > 0 ? total : '-'}</td>
+                  </tr>
+                );
+              })}
+              {filteredParticipants.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-slate-500 text-xs font-medium">Belum ada data peserta.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>

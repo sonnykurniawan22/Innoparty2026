@@ -137,7 +137,7 @@ export const JudgeQRModal: React.FC<{ participants: Participant[] }> = ({ partic
               <option value="">-- Pilih Peserta --</option>
               {filteredParticipants.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} - {p.teamName} ({p.stream === 'SS' ? 'SS' : `QCC ${p.levelCategory}`})
+                  {p.name} ({p.stream === 'SS' ? 'SS' : `QCC ${p.levelCategory}`})
                 </option>
               ))}
             </select>

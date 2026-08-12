@@ -189,26 +189,33 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
               <label className="block text-xs font-black uppercase text-slate-500 mb-2">
                 PILIH TIM PESERTA
               </label>
-              <select
-                value={selectedParticipantId}
-                onChange={(e) => setSelectedParticipantId(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white font-bold text-sm text-slate-900 focus:ring-2 focus:ring-red-500 focus:outline-none"
-              >
-                {participants.length === 0 ? (
-                  <option value="">Memuat peserta...</option>
-                ) : (
-                  participants.map((p) => {
-                    const scoredByThisJudge = scores.some(
-                      (s) => s.participantId === p.id && s.judgeId === selectedJudgeId
-                    );
-                    return (
-                      <option key={p.id} value={p.id}>
-                        {p.name} • {p.teamName} ({p.stream === 'SS' ? 'SS' : `${p.levelCategory}`}) {scoredByThisJudge ? '✓ [Sudah Dinilai]' : ''}
-                      </option>
-                    );
-                  })
-                )}
-              </select>
+              {initialParticipantId && selectedParticipant ? (
+                <div className="flex flex-col justify-center bg-white border border-slate-300 px-4 py-2.5 rounded-xl text-slate-900 font-bold text-sm min-h-[46px]">
+                  <span>{selectedParticipant.name}</span>
+                  <span className="text-[10px] text-slate-500 font-medium mt-0.5">Terkunci via QR Code</span>
+                </div>
+              ) : (
+                <select
+                  value={selectedParticipantId}
+                  onChange={(e) => setSelectedParticipantId(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white font-bold text-sm text-slate-900 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                >
+                  {participants.length === 0 ? (
+                    <option value="">Memuat peserta...</option>
+                  ) : (
+                    participants.map((p) => {
+                      const scoredByThisJudge = scores.some(
+                        (s) => s.participantId === p.id && s.judgeId === selectedJudgeId
+                      );
+                      return (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.stream === 'SS' ? 'SS' : `${p.levelCategory}`}) {scoredByThisJudge ? '✓ [Sudah Dinilai]' : ''}
+                        </option>
+                      );
+                    })
+                  )}
+                </select>
+              )}
             </div>
 
           </div>
@@ -219,9 +226,6 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-black uppercase text-red-700 bg-red-100 px-2.5 py-0.5 rounded-full border border-red-200">
-                      {selectedParticipant.teamName}
-                    </span>
                     <span className="text-[10px] font-black uppercase tracking-wider bg-slate-200 text-slate-800 px-2.5 py-0.5 rounded-full">
                       {selectedParticipant.stream === 'SS' ? 'SS' : `QCC • ${selectedParticipant.levelCategory} Class`}
                     </span>

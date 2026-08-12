@@ -10,11 +10,6 @@ interface LivePodiumProps {
   settings?: ContestSettings;
   activeCategoryFilter: string;
   setActiveCategoryFilter: (cat: string) => void;
-  podiumAvatars?: {
-    rank1Url?: string;
-    rank2Url?: string;
-    rank3Url?: string;
-  };
 }
 
 export const LivePodium: React.FC<LivePodiumProps> = ({
@@ -23,7 +18,6 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
   settings,
   activeCategoryFilter,
   setActiveCategoryFilter,
-  podiumAvatars,
 }) => {
   // Filter leaderboard based on category filter
   const filteredLeaderboard = leaderboard.filter((item) => {
@@ -136,7 +130,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
               <div className="podium-card w-full md:w-[30%] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center relative pb-6 pt-14 order-2 md:order-1 h-auto md:h-[85%] z-10 mt-12 md:mt-0">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-20 h-20 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center shadow-sm relative overflow-hidden">
-                    <img className="w-full h-full object-cover" src={podiumAvatars?.rank2Url || "https://drive.google.com/uc?export=view&id=1Ul03BhQkZaAwqEsCbO1UmQ_xmcXp5B8i"} referrerPolicy="no-referrer" alt="Juara 2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <img className="w-full h-full object-cover" src={rank2?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Ul03BhQkZaAwqEsCbO1UmQ_xmcXp5B8i"} referrerPolicy="no-referrer" alt="Juara 2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="absolute -bottom-2 w-6 h-6 bg-surface-variant border-2 border-surface-container-lowest rounded-full flex items-center justify-center">
                     <span className="text-label-sm font-bold text-on-surface-variant">2</span>
@@ -152,8 +146,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                         RUNNER UP (JUARA 2)
                       </div>
                       <span className="inline-block px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded mb-2 tracking-wider uppercase">{getCategoryBadge(rank2.participant)}</span>
-                      <h3 className="text-headline-md font-bold text-on-surface mt-1">{rank2.participant.name}</h3>
-                      <p className="text-label-md text-secondary font-medium mb-4 text-center">{rank2.participant.teamName}</p>
+                      <h3 className="text-headline-md font-bold text-on-surface mt-1 mb-4 text-center">{rank2.participant.name}</h3>
                     </div>
                     <div className="w-full mt-auto pt-5 border-t border-outline-variant text-center bg-surface-bright rounded-b-xl flex flex-col justify-center min-h-[80px]">
                       <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Skor</p>
@@ -171,7 +164,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                 
                 <div className="absolute -top-14 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-28 h-28 rounded-full bg-primary-container border-4 border-surface-container-lowest flex items-center justify-center shadow-lg relative overflow-hidden">
-                    <img className="w-full h-full object-cover scale-110" src={podiumAvatars?.rank1Url || "https://drive.google.com/uc?export=view&id=1Nqk3jCqgImxHr2HfZb4NvWqofBO7N0AK"} referrerPolicy="no-referrer" alt="Juara 1" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <img className="w-full h-full object-cover scale-110" src={rank1?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Nqk3jCqgImxHr2HfZb4NvWqofBO7N0AK"} referrerPolicy="no-referrer" alt="Juara 1" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="absolute bottom-0 -right-2 w-8 h-8 bg-primary border-2 border-surface-container-lowest rounded-full flex items-center justify-center shadow-sm">
                     <span className="text-label-md font-bold text-on-primary">1</span>
@@ -186,8 +179,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                         <span>CHAMPION (JUARA 1)</span>
                       </div>
                       <span className="inline-block px-3 py-0.5 bg-primary-container text-on-primary-container text-[11px] font-bold rounded-full mb-3 tracking-wider shadow-sm uppercase">{getCategoryBadge(rank1.participant)}</span>
-                      <h3 className="text-headline-lg font-bold text-on-surface mb-1">{rank1.participant.name}</h3>
-                      <p className="text-label-lg text-primary font-bold mb-4 text-center">{rank1.participant.teamName}</p>
+                      <h3 className="text-headline-lg font-bold text-on-surface mb-4 text-center">{rank1.participant.name}</h3>
                     </div>
                     <div className="w-full mt-auto pt-6 border-t border-primary-fixed bg-primary-fixed-dim/10 text-center rounded-b-xl border-x-4 border-b-4 border-primary-container flex flex-col justify-center min-h-[100px]">
                       <p className="text-[11px] font-bold text-primary uppercase tracking-widest mb-1">Rata-rata Skor</p>
@@ -203,7 +195,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
               <div className="podium-card w-full md:w-[30%] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center relative pb-6 pt-14 order-3 h-auto md:h-[80%] z-10 mt-12 md:mt-0">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-20 h-20 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center shadow-sm relative overflow-hidden">
-                    <img className="w-full h-full object-cover" src={podiumAvatars?.rank3Url || "https://drive.google.com/uc?export=view&id=1HQ2l_Uy0ymzlbfNCYZojRqLmmZLUXXZM"} referrerPolicy="no-referrer" alt="Juara 3" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <img className="w-full h-full object-cover" src={rank3?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1HQ2l_Uy0ymzlbfNCYZojRqLmmZLUXXZM"} referrerPolicy="no-referrer" alt="Juara 3" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="absolute -bottom-2 w-6 h-6 bg-[#CD7F32] border-2 border-surface-container-lowest rounded-full flex items-center justify-center">
                     <span className="text-label-sm font-bold text-white">3</span>
@@ -219,8 +211,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                         3RD PLACE (JUARA 3)
                       </div>
                       <span className="inline-block px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded mb-2 tracking-wider border border-outline-variant/30 uppercase">{getCategoryBadge(rank3.participant)}</span>
-                      <h3 className="text-headline-md font-bold text-on-surface mt-1">{rank3.participant.name}</h3>
-                      <p className="text-label-md text-secondary font-medium mb-4 text-center">{rank3.participant.teamName}</p>
+                      <h3 className="text-headline-md font-bold text-on-surface mt-1 mb-4 text-center">{rank3.participant.name}</h3>
                     </div>
                     <div className="w-full mt-auto pt-5 border-t border-outline-variant text-center bg-surface-bright rounded-b-xl flex flex-col justify-center min-h-[80px]">
                       <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Skor</p>
@@ -254,7 +245,6 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                       </td>
                       <td className="py-4 px-6">
                         <div className="font-bold text-on-surface text-body-md">{item.participant.name}</div>
-                        <div className="text-[#10B981] font-medium text-[11px]">{item.participant.teamName}</div>
                       </td>
                       <td className="py-4 px-6 text-on-surface-variant">
                         <div className="line-clamp-2 max-w-sm">
@@ -335,9 +325,6 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                         <h4 className="font-bold text-on-surface text-body-md leading-tight">
                           {item.participant.name}
                         </h4>
-                        <p className="text-[11px] font-medium text-[#10B981] mt-0.5">
-                          {item.participant.teamName}
-                        </p>
                       </div>
                     </div>
                     <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shrink-0 ${

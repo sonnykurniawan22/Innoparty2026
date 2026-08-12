@@ -19,10 +19,10 @@ export type StreamCategory = 'QCC' | 'SS';
 export interface Participant {
   id: string;
   name: string;
-  teamName: string;
   projectTitle: string;
   levelCategory: LevelCategory;
   stream: StreamCategory;
+  photoUrl?: string;
   createdAt?: string;
 }
 
@@ -52,11 +52,6 @@ export interface ContestSettings {
   };
   eventName: string;
   activeCategory: string;
-  podiumAvatars?: {
-    rank1Url?: string;
-    rank2Url?: string;
-    rank3Url?: string;
-  };
   updatedAt?: string;
 }
 

@@ -29,7 +29,6 @@ export const MasterScores: React.FC = () => {
 
   // Subscribe to real-time Firestore masterCriteria
   useEffect(() => {
-    seedCriteriaIfEmpty();
     const unsubscribe = subscribeMasterCriteria((data) => {
       setCriteria(data);
     });
