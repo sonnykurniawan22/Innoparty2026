@@ -7,7 +7,6 @@ import {
   subscribeSettings,
   computeLeaderboard
 } from './lib/contestService';
-import { INITIAL_PARTICIPANTS } from './lib/mockSeed';
 
 import { Navbar } from './components/Navbar';
 import { LivePodium } from './components/LivePodium';
@@ -28,10 +27,10 @@ export default function App() {
       const cached = localStorage.getItem('cached_participants_v1');
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {}
-    return INITIAL_PARTICIPANTS;
+    return [];
   });
 
   const [scores, setScores] = useState<JudgeScore[]>([]);
@@ -43,7 +42,7 @@ export default function App() {
 
   const [activeJudgeId, setActiveJudgeId] = useState<number | null>(null);
   const [activeParticipantId, setActiveParticipantId] = useState<string | null>(null);
-  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('ALL');
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('QCC-Rising');
   
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');

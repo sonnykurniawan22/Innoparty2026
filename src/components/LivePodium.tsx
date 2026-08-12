@@ -21,24 +21,20 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
 }) => {
   // Filter leaderboard based on category filter
   const filteredLeaderboard = leaderboard.filter((item) => {
-    if (activeCategoryFilter === 'ALL') return true;
-    if (activeCategoryFilter === 'QCC-Rising' || activeCategoryFilter === 'Rising') {
-      return item.participant.stream === 'QCC' && item.participant.levelCategory === 'Rising';
-    }
     if (activeCategoryFilter === 'QCC-Leading' || activeCategoryFilter === 'Leading') {
       return item.participant.stream === 'QCC' && item.participant.levelCategory === 'Leading';
     }
     if (activeCategoryFilter === 'SS') {
       return item.participant.stream === 'SS';
     }
-    return true;
+    // Default is QCC Rising
+    return item.participant.stream === 'QCC' && item.participant.levelCategory === 'Rising';
   });
 
   const getCategoryTitle = (cat: string) => {
     if (cat === 'SS') return 'SS';
     if (cat === 'QCC-Leading' || cat === 'Leading') return 'QCC LEADING CLASS';
-    if (cat === 'QCC-Rising' || cat === 'Rising') return 'QCC RISING CLASS';
-    return 'SEMUA KATEGORI';
+    return 'QCC RISING CLASS';
   };
 
   const getCategoryBadge = (p: { stream: string; levelCategory: string }) => {
@@ -72,16 +68,6 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
 
           {/* Level Class Filter Buttons */}
           <div className="flex items-center bg-surface-container p-1.5 rounded-2xl border border-outline-variant shadow-inner flex-wrap gap-1">
-            <button
-              onClick={() => setActiveCategoryFilter('ALL')}
-              className={`px-3 py-2 rounded-xl text-label-md font-bold transition-all ${
-                activeCategoryFilter === 'ALL'
-                  ? 'bg-slate-800 text-white shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-            >
-              <span>Semua</span>
-            </button>
             <button
               onClick={() => setActiveCategoryFilter('QCC-Rising')}
               className={`px-3 py-2 rounded-xl text-label-md font-bold transition-all flex items-center space-x-1.5 ${

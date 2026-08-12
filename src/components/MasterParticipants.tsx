@@ -141,16 +141,6 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
             Atur data peserta dan pengelompokan level Rising Star & Leading Class
           </p>
         </div>
-
-        {participants.length === 0 && (
-          <button
-            onClick={handleSeedData}
-            className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-sm transition-all flex items-center space-x-1.5 shrink-0"
-          >
-            <Sparkles className="w-4 h-4 fill-current" />
-            <span>Isi Data Contoh Inovasi</span>
-          </button>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
