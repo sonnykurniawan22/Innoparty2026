@@ -3,7 +3,10 @@
   "appId": "1:304549212083:web:a4335a6568093da95e25c6",
   "apiKey": "AIzaSyC7OLaX_Y6zx-qzV_y0cYkbp8Pazu8vJGI",
   "authDomain": "stately-feather-xn50x.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-innoparty2026-d0e28216-e1be-4749-9e2c-b69eef12bf6e",
   "storageBucket": "stately-feather-xn50x.firebasestorage.app",
   "messagingSenderId": "304549212083",
-  "measurementId": ""
+  "measurementId": "",
+  "oAuthClientId": "304549212083-lmeq823m9c9fia3jvoae0jq1k60v4nnk.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

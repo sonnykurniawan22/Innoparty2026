@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "participants": {
+      "title": "Participants",
+      "description": "Master Data Peserta Kontes Inovasi",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "teamName": { "type": "string" },
+        "projectTitle": { "type": "string" },
+        "levelCategory": { "type": "string", "enum": ["Rising", "Leading"] },
+        "stream": { "type": "string", "enum": ["QCC", "SS", "Inovasi Mandiri"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "teamName", "projectTitle", "levelCategory", "stream"]
+    },
+    "scores": {
+      "title": "Scores",
+      "description": "Penilaian Juri untuk Peserta",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participantId": { "type": "string" },
+        "judgeId": { "type": "integer", "enum": [1, 2, 3] },
+        "criteriaScores": {
+          "type": "object",
+          "properties": {
+            "inovasiDampak": { "type": "number" },
+            "solusiTeknis": { "type": "number" },
+            "presentasiExecution": { "type": "number" },
+            "keberlanjutanReplikasi": { "type": "number" }
+          }
+        },
+        "totalScore": { "type": "number" },
+        "notes": { "type": "string" },
+        "submittedAt": { "type": "string" }
+      },
+      "required": ["participantId", "judgeId", "criteriaScores", "totalScore"]
+    },
+    "contestSettings": {
+      "title": "Contest Settings",
+      "description": "Pengaturan Status Lomba & Juri 3 Reveal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "juri3Revealed": { "type": "boolean" },
+        "eventName": { "type": "string" },
+        "activeCategory": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["juri3Revealed"]
+    }
+  }
+}
