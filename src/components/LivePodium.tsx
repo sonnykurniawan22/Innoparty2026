@@ -247,7 +247,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                           <div className="text-xs text-on-surface-variant line-clamp-1">"{item.participant.projectTitle}"</div>
                         </td>
                         <td className="py-4 px-4 text-center font-bold text-indigo-700 bg-indigo-50/40 font-mono">
-                          {item.participant.preliminaryScore !== undefined ? item.participant.preliminaryScore : '-'}
+                          {item.participant.preliminaryScore !== undefined ? item.participant.preliminaryScore.toFixed(2) : '-'}
                         </td>
                         <td className="py-4 px-3 text-center">
                           {item.hasJuri1 ? (

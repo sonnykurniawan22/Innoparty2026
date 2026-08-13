@@ -320,7 +320,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
 
                       {/* Penyisihan */}
                       <td className="py-3.5 px-3 text-center font-mono">
-                        <span className="font-bold text-slate-900">{item.preliminaryScore}</span>
+                        <span className="font-bold text-slate-900">{typeof item.preliminaryScore === 'number' ? item.preliminaryScore.toFixed(2) : item.preliminaryScore}</span>
                         <span className="text-[10px] text-indigo-600 block font-semibold">
                           ({item.preliminaryScoreContrib.toFixed(2)} pts)
                         </span>
@@ -494,7 +494,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                               <span>1. NILAI PENYISIHAN (BOBOT 90%)</span>
                             </span>
                             <span className="font-mono font-bold text-indigo-700">
-                              {item.preliminaryScore} / 100
+                              {typeof item.preliminaryScore === 'number' ? item.preliminaryScore.toFixed(2) : item.preliminaryScore} / 100
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-slate-600">

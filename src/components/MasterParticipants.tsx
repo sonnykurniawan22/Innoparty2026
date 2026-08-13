@@ -15,7 +15,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [projectTitle, setProjectTitle] = useState('');
-  const [preliminaryScore, setPreliminaryScore] = useState<number>(0);
+  const [preliminaryScore, setPreliminaryScore] = useState<number | string>(0);
   const [photoUrl, setPhotoUrl] = useState('');
   const [categorySelection, setCategorySelection] = useState<'QCC-Rising' | 'QCC-Leading' | 'SS'>('QCC-Rising');
 
@@ -203,11 +203,11 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
                 type="number"
                 min="0"
                 max="100"
-                step="0.1"
+                step="0.01"
                 required
                 value={preliminaryScore}
-                onChange={(e) => setPreliminaryScore(Number(e.target.value))}
-                placeholder="Contoh: 85.5 (Bobot 90%)"
+                onChange={(e) => setPreliminaryScore(e.target.value)}
+                placeholder="Contoh: 85.50 (Bobot 90%)"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
               <p className="text-[10px] text-slate-500 mt-1">
