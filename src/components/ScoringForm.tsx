@@ -22,18 +22,31 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
   const [selectedParticipantId, setSelectedParticipantId] = useState<string>('');
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
 
-  // Criteria Scores (0 to 100)
+  const [judgeName, setJudgeName] = useState<string>(() => {
+    try {
+      return localStorage.getItem('innoparty_judge_name') || '';
+    } catch (e) {
+      return '';
+    }
+  });
+
+  useEffect(() => {
+    if (judgeName) {
+      try {
+        localStorage.setItem('innoparty_judge_name', judgeName);
+      } catch (e) {}
+    }
+  }, [judgeName]);
+
+  // Criteria Scores (1 to 100)
   const [criteria, setCriteria] = useState<ScoreCriteria>({
-    inovasiDampak: 80,
-    solusiTeknis: 80,
-    presentasiExecution: 80,
-    keberlanjutanReplikasi: 80
+    performance: 80,
+    perbaikanMateri: 80
   });
 
   const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const isLockedJudge = !!initialJudgeId;
 
   // Update selected judge if passed via prop
   useEffect(() => {
@@ -68,14 +81,18 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
         (s) => s.participantId === selectedParticipantId && s.judgeId === selectedJudgeId
       );
       if (existing) {
-        setCriteria(existing.criteriaScores);
+        setCriteria({
+          performance: existing.criteriaScores?.performance ?? 80,
+          perbaikanMateri: existing.criteriaScores?.perbaikanMateri ?? 80
+        });
         setNotes(existing.notes || '');
+        if (existing.judgeName) {
+          setJudgeName(existing.judgeName);
+        }
       } else {
         setCriteria({
-          inovasiDampak: 80,
-          solusiTeknis: 80,
-          presentasiExecution: 80,
-          keberlanjutanReplikasi: 80
+          performance: 80,
+          perbaikanMateri: 80
         });
         setNotes('');
       }
@@ -94,26 +111,17 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
   const handleScoreChange = (key: keyof ScoreCriteria, val: number) => {
     setCriteria((prev) => ({
       ...prev,
-      [key]: Math.min(100, Math.max(0, val))
+      [key]: Math.min(100, Math.max(1, val))
     }));
-  };
-
-  const handleQuickPreset = (val: number) => {
-    setCriteria({
-      inovasiDampak: val,
-      solusiTeknis: val,
-      presentasiExecution: val,
-      keberlanjutanReplikasi: val
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedParticipantId) return;
+    if (!selectedParticipantId || !judgeName.trim()) return;
 
     try {
       setIsSubmitting(true);
-      await saveJudgeScore(selectedParticipantId, selectedJudgeId, criteria, notes);
+      await saveJudgeScore(selectedParticipantId, selectedJudgeId, criteria, notes, judgeName);
       setIsSubmitting(false);
       setSubmitSuccess(true);
       setTimeout(() => setSubmitSuccess(false), 3000);
@@ -137,7 +145,7 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
               FORM EVALUASI JURI MATCHDAY
             </h2>
             <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
-              Masukkan skor berdasarkan 4 parameter utama kriteria penilaian inovasi
+              Masukkan skor berdasarkan parameter kriteria penilaian inovasi
             </p>
           </div>
         </div>
@@ -154,34 +162,19 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
-            {/* Juri Selection */}
+            {/* Input Nama Juri */}
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
               <label className="block text-xs font-black uppercase text-slate-500 mb-2">
-                ROLE / POSISI JURI
+                NAMA JURI
               </label>
-              {isLockedJudge ? (
-                <div className="flex items-center gap-2 bg-emerald-100 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl font-black text-sm">
-                  <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <span>JURI {selectedJudgeId} (AKSES TERKUNCI)</span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-2">
-                  {[1, 2, 3].map((jId) => (
-                    <button
-                      key={jId}
-                      type="button"
-                      onClick={() => setSelectedJudgeId(jId as 1 | 2 | 3)}
-                      className={`py-2.5 rounded-xl font-black text-xs uppercase transition-all ${
-                        selectedJudgeId === jId
-                          ? 'bg-red-600 text-white shadow-sm'
-                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      Juri {jId}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <input
+                type="text"
+                required
+                value={judgeName}
+                onChange={(e) => setJudgeName(e.target.value)}
+                placeholder="Masukkan nama Juri..."
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white font-bold text-sm text-slate-900 focus:ring-2 focus:ring-red-500 focus:outline-none"
+              />
             </div>
 
             {/* Filter Category & Participant Selector */}
@@ -253,47 +246,47 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
 
         </div>
 
-          {/* Step 2: Criteria Sliders */}
+        {/* Step 2: Criteria Inputs */}
         <div className="space-y-6">
-          <h3 className="text-base font-black text-slate-900  uppercase tracking-tight flex items-center gap-2 border-b border-slate-100  pb-3">
+          <h3 className="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2 border-b border-slate-100 pb-3">
             <Sliders className="w-5 h-5 text-red-600" />
-            <span>2. PARAMETER KRITERIA PENILAIAN (0 - 100)</span>
+            <span>2. PARAMETER KRITERIA PENILAIAN JURI (SKALA 1 - 100)</span>
           </h3>
 
-          {/* Parameter 1: Inovasi & Dampak Bisnis (30%) */}
-          <div className="bg-slate-50  p-4 sm:p-5 rounded-2xl border border-slate-200  space-y-3">
+          {/* Parameter 1: Performance */}
+          <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <span className="text-xs font-black text-emerald-700  uppercase tracking-widest bg-emerald-100  px-2 py-0.5 rounded">
-                  BOBOT 30%
+                <span className="text-xs font-black text-red-700 uppercase tracking-widest bg-red-100 px-2 py-0.5 rounded">
+                  BOBOT JURI 4%
                 </span>
-                <h4 className="text-sm font-bold text-slate-900  mt-1">
-                  1. Inovasi & Dampak Bisnis
+                <h4 className="text-sm font-bold text-slate-900 mt-1">
+                  1. Performance (Skala 1 - 100)
                 </h4>
-                <p className="text-xs text-slate-500">Kebaruan ide, efisiensi biaya, nilai tambah & dampak kuantitatif</p>
+                <p className="text-xs text-slate-500">Penampilan, kekompakan tim, pemaparan, dan penguasaan panggung / materi saat presentasi</p>
               </div>
 
-              {/* Touch Numeric Input with +/- Buttons for Mobile */}
+              {/* Touch Numeric Input with +/- Buttons */}
               <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
                 <button
                   type="button"
-                  onClick={() => handleScoreChange('inovasiDampak', criteria.inovasiDampak - 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
+                  onClick={() => handleScoreChange('performance', criteria.performance - 5)}
+                  className="w-10 h-10 rounded-xl bg-slate-200 text-slate-800 font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
                 >
                   -
                 </button>
                 <input
                   type="number"
-                  min="0"
+                  min="1"
                   max="100"
-                  value={criteria.inovasiDampak}
-                  onChange={(e) => handleScoreChange('inovasiDampak', Number(e.target.value))}
-                  className="w-16 bg-white  border-2 border-emerald-600 rounded-xl p-2 font-black text-base text-center text-slate-900 "
+                  value={criteria.performance}
+                  onChange={(e) => handleScoreChange('performance', Number(e.target.value))}
+                  className="w-16 bg-white border-2 border-red-600 rounded-xl p-2 font-black text-base text-center text-slate-900"
                 />
                 <button
                   type="button"
-                  onClick={() => handleScoreChange('inovasiDampak', criteria.inovasiDampak + 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
+                  onClick={() => handleScoreChange('performance', criteria.performance + 5)}
+                  className="w-10 h-10 rounded-xl bg-slate-200 text-slate-800 font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
                 >
                   +
                 </button>
@@ -301,47 +294,47 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
             </div>
             <input
               type="range"
-              min="0"
+              min="1"
               max="100"
-              value={criteria.inovasiDampak}
-              onChange={(e) => handleScoreChange('inovasiDampak', Number(e.target.value))}
-              className="w-full accent-emerald-600 h-2.5 bg-slate-200  rounded-lg cursor-pointer"
+              value={criteria.performance}
+              onChange={(e) => handleScoreChange('performance', Number(e.target.value))}
+              className="w-full accent-red-600 h-2.5 bg-slate-200 rounded-lg cursor-pointer"
             />
           </div>
 
-          {/* Parameter 2: Solusi & Kualitas Teknis (30%) */}
-          <div className="bg-slate-50  p-4 sm:p-5 rounded-2xl border border-slate-200  space-y-3">
+          {/* Parameter 2: Perbaikan Materi */}
+          <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <span className="text-xs font-black text-emerald-700  uppercase tracking-widest bg-emerald-100  px-2 py-0.5 rounded">
-                  BOBOT 30%
+                <span className="text-xs font-black text-red-700 uppercase tracking-widest bg-red-100 px-2 py-0.5 rounded">
+                  BOBOT JURI 4%
                 </span>
-                <h4 className="text-sm font-bold text-slate-900  mt-1">
-                  2. Solusi & Kualitas Teknis
+                <h4 className="text-sm font-bold text-slate-900 mt-1">
+                  2. Perbaikan Materi (Skala 1 - 100)
                 </h4>
-                <p className="text-xs text-slate-500">Metodologi analisis masalah, kompleksitas solusi & keandalan teknis</p>
+                <p className="text-xs text-slate-500">Kelengkapan data perbaikan, kedalaman analisis, serta validasi hasil perbaikan inovasi</p>
               </div>
 
               <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
                 <button
                   type="button"
-                  onClick={() => handleScoreChange('solusiTeknis', criteria.solusiTeknis - 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
+                  onClick={() => handleScoreChange('perbaikanMateri', criteria.perbaikanMateri - 5)}
+                  className="w-10 h-10 rounded-xl bg-slate-200 text-slate-800 font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
                 >
                   -
                 </button>
                 <input
                   type="number"
-                  min="0"
+                  min="1"
                   max="100"
-                  value={criteria.solusiTeknis}
-                  onChange={(e) => handleScoreChange('solusiTeknis', Number(e.target.value))}
-                  className="w-16 bg-white  border-2 border-emerald-600 rounded-xl p-2 font-black text-base text-center text-slate-900 "
+                  value={criteria.perbaikanMateri}
+                  onChange={(e) => handleScoreChange('perbaikanMateri', Number(e.target.value))}
+                  className="w-16 bg-white border-2 border-red-600 rounded-xl p-2 font-black text-base text-center text-slate-900"
                 />
                 <button
                   type="button"
-                  onClick={() => handleScoreChange('solusiTeknis', criteria.solusiTeknis + 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
+                  onClick={() => handleScoreChange('perbaikanMateri', criteria.perbaikanMateri + 5)}
+                  className="w-10 h-10 rounded-xl bg-slate-200 text-slate-800 font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
                 >
                   +
                 </button>
@@ -349,110 +342,15 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
             </div>
             <input
               type="range"
-              min="0"
+              min="1"
               max="100"
-              value={criteria.solusiTeknis}
-              onChange={(e) => handleScoreChange('solusiTeknis', Number(e.target.value))}
-              className="w-full accent-emerald-600 h-2.5 bg-slate-200  rounded-lg cursor-pointer"
-            />
-          </div>
-
-          {/* Parameter 3: Presentasi & Eksekusi (20%) */}
-          <div className="bg-slate-50  p-4 sm:p-5 rounded-2xl border border-slate-200  space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <span className="text-xs font-black text-emerald-700  uppercase tracking-widest bg-emerald-100  px-2 py-0.5 rounded">
-                  BOBOT 20%
-                </span>
-                <h4 className="text-sm font-bold text-slate-900  mt-1">
-                  3. Presentasi & Keterlibatan Tim
-                </h4>
-                <p className="text-xs text-slate-500">Penyampaian materi, kekompakan & keterlibatan aktif tim, alat peraga, serta jawaban Q&A</p>
-              </div>
-
-              <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => handleScoreChange('presentasiExecution', criteria.presentasiExecution - 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={criteria.presentasiExecution}
-                  onChange={(e) => handleScoreChange('presentasiExecution', Number(e.target.value))}
-                  className="w-16 bg-white  border-2 border-emerald-600 rounded-xl p-2 font-black text-base text-center text-slate-900 "
-                />
-                <button
-                  type="button"
-                  onClick={() => handleScoreChange('presentasiExecution', criteria.presentasiExecution + 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={criteria.presentasiExecution}
-              onChange={(e) => handleScoreChange('presentasiExecution', Number(e.target.value))}
-              className="w-full accent-emerald-600 h-2.5 bg-slate-200  rounded-lg cursor-pointer"
-            />
-          </div>
-
-          {/* Parameter 4: Keberlanjutan & Potensi Replikasi (20%) */}
-          <div className="bg-slate-50  p-4 sm:p-5 rounded-2xl border border-slate-200  space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <span className="text-xs font-black text-emerald-700  uppercase tracking-widest bg-emerald-100  px-2 py-0.5 rounded">
-                  BOBOT 20%
-                </span>
-                <h4 className="text-sm font-bold text-slate-900  mt-1">
-                  4. Keberlanjutan & Potensi Replikasi
-                </h4>
-                <p className="text-xs text-slate-500">Kemudahan standar operasional, standarisasi & penerapan di unit kerja lain</p>
-              </div>
-
-              <div className="flex items-center space-x-2 shrink-0 self-end sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => handleScoreChange('keberlanjutanReplikasi', criteria.keberlanjutanReplikasi - 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={criteria.keberlanjutanReplikasi}
-                  onChange={(e) => handleScoreChange('keberlanjutanReplikasi', Number(e.target.value))}
-                  className="w-16 bg-white  border-2 border-emerald-600 rounded-xl p-2 font-black text-base text-center text-slate-900 "
-                />
-                <button
-                  type="button"
-                  onClick={() => handleScoreChange('keberlanjutanReplikasi', criteria.keberlanjutanReplikasi + 5)}
-                  className="w-10 h-10 rounded-xl bg-slate-200  text-slate-800  font-black text-lg flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={criteria.keberlanjutanReplikasi}
-              onChange={(e) => handleScoreChange('keberlanjutanReplikasi', Number(e.target.value))}
-              className="w-full accent-emerald-600 h-2.5 bg-slate-200  rounded-lg cursor-pointer"
+              value={criteria.perbaikanMateri}
+              onChange={(e) => handleScoreChange('perbaikanMateri', Number(e.target.value))}
+              className="w-full accent-red-600 h-2.5 bg-slate-200 rounded-lg cursor-pointer"
             />
           </div>
         </div>
+
 
         {/* Calculated Score & Feedback Notes */}
         <div className="pt-4 border-t border-slate-200">
@@ -497,11 +395,17 @@ export const ScoringForm: React.FC<ScoringFormProps> = ({
 
               <button
                 type="submit"
-                disabled={isSubmitting || !selectedParticipantId}
-                className="w-full py-3.5 sm:py-4 bg-red-600 hover:bg-red-500 text-white font-black text-base sm:text-lg uppercase tracking-wider rounded-2xl shadow-xl shadow-red-900/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                disabled={isSubmitting || !selectedParticipantId || !judgeName.trim()}
+                className="w-full py-3.5 sm:py-4 bg-red-600 hover:bg-red-500 text-white font-black text-base sm:text-lg uppercase tracking-wider rounded-2xl shadow-xl shadow-red-900/20 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
               >
                 <Send className="w-5 h-5" />
-                <span>{isSubmitting ? 'MENYIMPAN...' : `KIRIM PENILAIAN JURI ${selectedJudgeId}`}</span>
+                <span>
+                  {isSubmitting
+                    ? 'MENYIMPAN...'
+                    : judgeName.trim()
+                    ? `KIRIM PENILAIAN (${judgeName.trim().toUpperCase()})`
+                    : 'KIRIM PENILAIAN JURI'}
+                </span>
               </button>
             </div>
           </div>

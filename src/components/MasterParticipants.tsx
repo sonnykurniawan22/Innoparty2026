@@ -15,6 +15,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [projectTitle, setProjectTitle] = useState('');
+  const [preliminaryScore, setPreliminaryScore] = useState<number>(0);
   const [photoUrl, setPhotoUrl] = useState('');
   const [categorySelection, setCategorySelection] = useState<'QCC-Rising' | 'QCC-Leading' | 'SS'>('QCC-Rising');
 
@@ -24,6 +25,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
     setEditingId(null);
     setName('');
     setProjectTitle('');
+    setPreliminaryScore(0);
     setPhotoUrl('');
     setCategorySelection('QCC-Rising');
   };
@@ -32,6 +34,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
     setEditingId(p.id);
     setName(p.name);
     setProjectTitle(p.projectTitle);
+    setPreliminaryScore(p.preliminaryScore || 0);
     setPhotoUrl(p.photoUrl || '');
     if (p.stream === 'SS') {
       setCategorySelection('SS');
@@ -66,6 +69,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
         await updateParticipant(editingId, {
           name,
           projectTitle,
+          preliminaryScore: Number(preliminaryScore) || 0,
           levelCategory,
           stream,
           photoUrl
@@ -74,6 +78,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
         await addParticipant({
           name,
           projectTitle,
+          preliminaryScore: Number(preliminaryScore) || 0,
           levelCategory,
           stream,
           photoUrl
@@ -86,6 +91,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
       setIsSaving(false);
     }
   };
+
 
   const handleDelete = async (id: string) => {
     if (confirm("Apakah Anda yakin ingin menghapus data peserta inovasi ini?")) {
@@ -190,7 +196,27 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700  mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Nilai Penyisihan (Skala 0 - 100):
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                required
+                value={preliminaryScore}
+                onChange={(e) => setPreliminaryScore(Number(e.target.value))}
+                placeholder="Contoh: 85.5 (Bobot 90%)"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+              <p className="text-[10px] text-slate-500 mt-1">
+                *Nilai rekap penyisihan awal (berkontribusi 90% ke nilai total)
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 Foto Profil Peserta (URL):
               </label>
               <input
@@ -292,6 +318,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
                 <tr>
                   <th className="py-3 px-3">NAMA TIM / PESERTA</th>
                   <th className="py-3 px-3">JUDUL INOVASI</th>
+                  <th className="py-3 px-3 text-center">NILAI PENYISIHAN</th>
                   <th className="py-3 px-3 text-center">KATEGORI</th>
                   <th className="py-3 px-3 text-center">AKSI</th>
                 </tr>
@@ -315,6 +342,9 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
                     </td>
                     <td className="py-3.5 px-3 text-slate-600 max-w-xs truncate">
                       {p.projectTitle}
+                    </td>
+                    <td className="py-3.5 px-3 text-center font-extrabold text-indigo-700 bg-indigo-50/50">
+                      {p.preliminaryScore !== undefined ? p.preliminaryScore : '-'}
                     </td>
                     <td className="py-3.5 px-3 text-center">
                       <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase border ${

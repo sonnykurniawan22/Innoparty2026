@@ -168,7 +168,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                       <h3 className="text-headline-lg font-bold text-on-surface mb-4 text-center">{rank1.participant.name}</h3>
                     </div>
                     <div className="w-full mt-auto pt-6 border-t border-primary-fixed bg-primary-fixed-dim/10 text-center rounded-b-xl border-x-4 border-b-4 border-primary-container flex flex-col justify-center min-h-[100px]">
-                      <p className="text-[11px] font-bold text-primary uppercase tracking-widest mb-1">Rata-rata Skor</p>
+                      <p className="text-[11px] font-bold text-primary uppercase tracking-widest mb-1">Total Skor</p>
                       <p className="text-headline-xl font-black text-primary-container text-[40px] leading-none drop-shadow-sm">{rank1.calculatedTotal}</p>
                     </div>
                   </>
@@ -212,150 +212,142 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
           </div>
         )}
 
-        {/* Standings Table Section (Integrated) */}
-        <div className="border-t border-outline-variant/30">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[1000px]">
-              <tbody className="text-body-sm text-on-surface divide-y divide-outline-variant">
-                {rankedData.slice(3).map((item, index) => {
-                  const isJuri3Unlocked = isJuri3RevealedForCategory(getParticipantCategoryKey(item.participant), settings || juri3Revealed);
-                  return (
-                    <tr 
-                      key={item.participant.id || `row-${index}`} 
-                      className="hover:bg-surface-container-low transition-colors group"
-                    >
-                      <td className="py-4 px-6 w-16">
-                        <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant">
+        {/* Standings Table Section (Integrated - Only shown if more than 3 participants) */}
+        {rankedData.length > 3 && (
+          <div className="border-t border-outline-variant/30">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
+                <thead className="bg-surface-container text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border-b border-outline-variant">
+                  <tr>
+                    <th className="py-3 px-4 w-12 text-center">POS</th>
+                    <th className="py-3 px-4">NAMA TIM / PESERTA</th>
+                    <th className="py-3 px-4 text-center">PENYISIHAN (90%)</th>
+                    <th className="py-3 px-3 text-center">JURI 1</th>
+                    <th className="py-3 px-3 text-center">JURI 2</th>
+                    <th className="py-3 px-3 text-center">JURI 3</th>
+                    <th className="py-3 px-4 text-center">PUBLIC VOTE (2%)</th>
+                    <th className="py-3 px-6 text-center bg-primary-container/20 text-primary font-black">NILAI AKHIR</th>
+                    <th className="py-3 px-4 text-center">STATUS</th>
+                  </tr>
+                </thead>
+                <tbody className="text-body-sm text-on-surface divide-y divide-outline-variant">
+                  {rankedData.slice(3).map((item, index) => {
+                    return (
+                      <tr 
+                        key={item.participant.id || `row-${index}`} 
+                        className="hover:bg-surface-container-low transition-colors group"
+                      >
+                        <td className="py-4 px-4 text-center">
+                          <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant mx-auto">
+                            {item.rank}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="font-bold text-on-surface text-body-md">{item.participant.name}</div>
+                          <div className="text-xs text-on-surface-variant line-clamp-1">"{item.participant.projectTitle}"</div>
+                        </td>
+                        <td className="py-4 px-4 text-center font-bold text-indigo-700 bg-indigo-50/40 font-mono">
+                          {item.participant.preliminaryScore !== undefined ? item.participant.preliminaryScore : '-'}
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          {item.hasJuri1 ? (
+                            <span className="text-on-surface-variant font-mono">{item.juri1Score}</span>
+                          ) : (
+                            <span className="text-on-surface-variant">-</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          {item.hasJuri2 ? (
+                            <span className="text-on-surface-variant font-mono">{item.juri2Score}</span>
+                          ) : (
+                            <span className="text-on-surface-variant">-</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          {item.hasJuri3 ? (
+                            <span className="text-on-surface-variant font-mono">{item.juri3Score}</span>
+                          ) : (
+                            <span className="text-on-surface-variant">-</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 text-center font-bold text-emerald-700 font-mono">
+                          {item.publicVoteCount} Suara
+                        </td>
+                        <td className="py-4 px-6 text-center bg-surface-bright font-black text-body-md text-red-600 font-mono">
+                          {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <span className="text-xs font-medium text-secondary">
+                            Peserta Final
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+
+            {/* MOBILE CARDS VIEW */}
+            <div className="block md:hidden divide-y divide-outline-variant border-t border-outline-variant">
+              {rankedData.slice(3).map((item, index) => {
+                return (
+                  <div 
+                    key={item.participant.id || `card-${index}`}
+                    className="p-4 space-y-3 bg-surface-container-lowest"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant shrink-0">
                           {item.rank}
                         </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="font-bold text-on-surface text-body-md">{item.participant.name}</div>
-                      </td>
-                      <td className="py-4 px-6 text-on-surface-variant">
-                        <div className="line-clamp-2 max-w-sm">
-                          "{item.participant.projectTitle}"
+                        <div>
+                          <h4 className="font-bold text-on-surface text-body-md leading-tight">
+                            {item.participant.name}
+                          </h4>
                         </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          item.participant.stream === 'SS'
-                            ? 'bg-emerald-50 text-emerald-800'
-                            : item.participant.levelCategory === 'Leading'
-                            ? 'bg-[#F3E8FF] text-[#6B21A8]'
-                            : 'bg-amber-50 text-amber-800'
-                        }`}>
-                          {getCategoryBadge(item.participant)}
-                        </span>
-                      </td>
-                      <td className="py-4 px-3 text-center">
-                        {item.hasJuri1 ? (
-                          <span className="text-on-surface-variant font-mono">{item.juri1Score}</span>
-                        ) : (
-                          <span className="text-on-surface-variant">-</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-3 text-center">
-                        {item.hasJuri2 ? (
-                          <span className="text-on-surface-variant font-mono">{item.juri2Score}</span>
-                        ) : (
-                          <span className="text-on-surface-variant">-</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-3 text-center">
-                        {!isJuri3Unlocked ? (
-                          <span className="text-on-surface-variant font-bold text-[10px]">LOCKED</span>
-                        ) : item.hasJuri3 ? (
-                          <span className="text-on-surface-variant font-mono">{item.juri3Score}</span>
-                        ) : (
-                          <span className="text-on-surface-variant">-</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-6 text-center bg-surface-bright font-bold text-body-md group-hover:bg-surface-variant transition-colors font-mono">
-                        {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="text-center font-medium text-secondary">
-                          Peserta Matchday
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {rankedData.length <= 3 && (
-                  <tr>
-                    <td colSpan={9} className="py-12 text-center text-on-surface-variant font-medium">
-                      Belum ada peserta tambahan di luar Top 3 untuk kategori kelas ini.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* MOBILE CARDS VIEW */}
-          <div className="block md:hidden divide-y divide-outline-variant border-t border-outline-variant">
-            {rankedData.slice(3).map((item, index) => {
-              const isJuri3Unlocked = isJuri3RevealedForCategory(getParticipantCategoryKey(item.participant), settings || juri3Revealed);
-              return (
-                <div 
-                  key={item.participant.id || `card-${index}`}
-                  className="p-4 space-y-3 bg-surface-container-lowest"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center space-x-2.5">
-                      <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant shrink-0">
-                        {item.rank}
                       </div>
-                      <div>
-                        <h4 className="font-bold text-on-surface text-body-md leading-tight">
-                          {item.participant.name}
-                        </h4>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shrink-0 ${
+                        item.participant.levelCategory === 'Leading'
+                          ? 'bg-[#F3E8FF] text-[#6B21A8]'
+                          : 'bg-emerald-50 text-emerald-700'
+                      }`}>
+                        {item.participant.levelCategory}
+                      </span>
+                    </div>
+
+                    <p className="text-body-sm text-on-surface-variant bg-surface p-2.5 rounded-lg border border-outline-variant">
+                      "{item.participant.projectTitle}"
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-2 text-center pt-1">
+                      <div className="bg-surface p-2 rounded-lg border border-outline-variant">
+                        <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 1</span>
+                        <span className="text-body-sm font-bold text-on-surface">{item.hasJuri1 ? item.juri1Score : '-'}</span>
                       </div>
-                    </div>
-                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shrink-0 ${
-                      item.participant.levelCategory === 'Leading'
-                        ? 'bg-[#F3E8FF] text-[#6B21A8]'
-                        : 'bg-emerald-50 text-emerald-700'
-                    }`}>
-                      {item.participant.levelCategory}
-                    </span>
-                  </div>
-
-                  <p className="text-body-sm text-on-surface-variant bg-surface p-2.5 rounded-lg border border-outline-variant">
-                    "{item.participant.projectTitle}"
-                  </p>
-
-                  <div className="grid grid-cols-3 gap-2 text-center pt-1">
-                    <div className="bg-surface p-2 rounded-lg border border-outline-variant">
-                      <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 1</span>
-                      <span className="text-body-sm font-bold text-on-surface">{item.hasJuri1 ? item.juri1Score : '-'}</span>
-                    </div>
-                    <div className="bg-surface p-2 rounded-lg border border-outline-variant">
-                      <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 2</span>
-                      <span className="text-body-sm font-bold text-on-surface">{item.hasJuri2 ? item.juri2Score : '-'}</span>
-                    </div>
-                    <div className="bg-surface p-2 rounded-lg border border-outline-variant">
-                      <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 3</span>
-                      {!isJuri3Unlocked ? (
-                        <span className="text-[9px] font-bold text-primary">LOCKED</span>
-                      ) : (
+                      <div className="bg-surface p-2 rounded-lg border border-outline-variant">
+                        <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 2</span>
+                        <span className="text-body-sm font-bold text-on-surface">{item.hasJuri2 ? item.juri2Score : '-'}</span>
+                      </div>
+                      <div className="bg-surface p-2 rounded-lg border border-outline-variant">
+                        <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 3</span>
                         <span className="text-body-sm font-bold text-on-surface">{item.hasJuri3 ? item.juri3Score : '-'}</span>
-                      )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-outline-variant/50">
+                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total Skor</span>
+                      <span className="text-headline-md font-bold text-primary font-mono">
+                        {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
+                      </span>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-outline-variant/50">
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total Rata-rata</span>
-                    <span className="text-headline-md font-bold text-primary font-mono">
-                      {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
 

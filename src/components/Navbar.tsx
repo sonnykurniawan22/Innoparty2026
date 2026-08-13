@@ -1,11 +1,13 @@
 import React from 'react';
-import { Trophy, Award, Users, QrCode, Settings, ShieldCheck, FileText } from 'lucide-react';
+import { Trophy, Award, Users, QrCode, Settings, ShieldCheck, LogOut, Heart } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'podium' | 'scoring' | 'master' | 'masterScores' | 'qr' | 'admin';
-  setActiveTab: (tab: 'podium' | 'scoring' | 'master' | 'masterScores' | 'qr' | 'admin') => void;
+  activeTab: 'podium' | 'scoring' | 'master' | 'qr' | 'admin' | 'vote';
+  setActiveTab: (tab: 'podium' | 'scoring' | 'master' | 'qr' | 'admin' | 'vote') => void;
   activeJudgeId: number | null;
   juri3Revealed: boolean;
+  isAdminLoggedIn?: boolean;
+  onAdminLogout?: () => void;
   onExitJudgeMode?: () => void;
 }
 
@@ -14,6 +16,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   activeJudgeId,
   juri3Revealed,
+  isAdminLoggedIn,
+  onAdminLogout,
   onExitJudgeMode
 }) => {
   return (
@@ -85,6 +89,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
 
               <button
+                onClick={() => setActiveTab('vote')}
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] ${
+                  activeTab === 'vote'
+                    ? 'bg-red-600 text-white shadow-sm font-black'
+                    : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                }`}
+              >
+                <Heart className="w-4 h-4" />
+                <span>Penilaian Public</span>
+              </button>
+
+              <button
                 onClick={() => setActiveTab('master')}
                 className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] ${
                   activeTab === 'master'
@@ -97,18 +113,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('masterScores')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] ${
-                  activeTab === 'masterScores'
-                    ? 'bg-red-600 text-white shadow-sm font-black'
-                    : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>Master Penilaian</span>
-              </button>
-
-              <button
                 onClick={() => setActiveTab('qr')}
                 className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] ${
                   activeTab === 'qr'
@@ -117,7 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <QrCode className="w-4 h-4" />
-                <span>QR Link Juri</span>
+                <span>QR Barcode</span>
               </button>
 
               <button
@@ -134,6 +138,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 )}
               </button>
+
+              {isAdminLoggedIn && onAdminLogout && (
+                <button
+                  onClick={onAdminLogout}
+                  title="Keluar dari Portal Admin"
+                  className="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors ml-2 border border-red-200"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden lg:inline">Keluar</span>
+                </button>
+              )}
             </nav>
           )}
 
@@ -161,6 +176,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Penilaian</span>
             </button>
             <button
+              onClick={() => setActiveTab('vote')}
+              className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 min-h-[40px] active:scale-95 transition-transform ${
+                activeTab === 'vote' ? 'bg-red-600 text-white font-black' : 'bg-slate-100 text-slate-600'
+              }`}
+            >
+              <Heart className="w-4 h-4 shrink-0" />
+              <span>Public</span>
+            </button>
+            <button
               onClick={() => setActiveTab('master')}
               className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 min-h-[40px] active:scale-95 transition-transform ${
                 activeTab === 'master' ? 'bg-red-600 text-white font-black' : 'bg-slate-100 text-slate-600'
@@ -168,15 +192,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Users className="w-4 h-4 shrink-0" />
               <span>Peserta</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('masterScores')}
-              className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 min-h-[40px] active:scale-95 transition-transform ${
-                activeTab === 'masterScores' ? 'bg-red-600 text-white font-black' : 'bg-slate-100 text-slate-600'
-              }`}
-            >
-              <FileText className="w-4 h-4 shrink-0" />
-              <span>Rekap Skor</span>
             </button>
             <button
               onClick={() => setActiveTab('qr')}
@@ -199,6 +214,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               )}
             </button>
+
+            {isAdminLoggedIn && onAdminLogout && (
+              <button
+                onClick={onAdminLogout}
+                className="whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 min-h-[40px] bg-red-50 text-red-600 border border-red-200 active:scale-95 transition-transform"
+              >
+                <LogOut className="w-4 h-4 shrink-0" />
+                <span>Keluar</span>
+              </button>
+            )}
           </div>
         )}
 

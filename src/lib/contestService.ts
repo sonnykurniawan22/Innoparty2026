@@ -17,74 +17,153 @@ import {
   ContestSettings,
   LeaderboardEntry,
   ScoreCriteria,
-  Criterion
+  Criterion,
+  PublicVote
 } from '../types';
 import { INITIAL_PARTICIPANTS } from './mockSeed';
 
 const PARTICIPANTS_COL = 'participants';
 const SCORES_COL = 'scores';
+const PUBLIC_VOTES_COL = 'publicVotes';
 const SETTINGS_COL = 'contestSettings';
 const CRITERIA_COL = 'masterCriteria';
 const SETTINGS_DOC_ID = 'global';
 
 export const DEFAULT_CRITERIA: Criterion[] = [
   {
-    id: 'crit-1',
+    id: 'crit-performance',
     category: 'ALL',
-    title: 'Inovasi & Dampak Bisnis',
-    weight: '30%',
-    description: 'Menilai kebaruan ide, efisiensi biaya yang dihasilkan, serta dampak kuantitatif terhadap performa bisnis dan operasional.',
+    title: 'Performance (Penilaian Juri)',
+    weight: '4%',
+    description: 'Menilai penampilan, pemaparan materi, kekompakan tim, dan penguasaan panggung/materi saat presentasi.',
     indicators: [
-      { id: 'ind-1-1', name: 'Kebaruan Ide (Originality)', detail: 'Tingkat keunikan ide inovasi dan terobosan pemikiran dibanding metode eksisting.' },
-      { id: 'ind-1-2', name: 'Dampak Kuantitatif & Biaya', detail: 'Penghematan biaya (cost saving), efisiensi jam kerja, atau peningkatan output produksi.' },
-      { id: 'ind-1-3', name: 'Peningkatan SQDCM', detail: 'Dampak positif terhadap Safety, Quality, Delivery, Cost, Morale, & Environment.' }
+      { id: 'ind-perf-1', name: 'Penampilan & Kekompakan', detail: 'Kerapihan, kejelasan bicara, dan kerjasama tim.' },
+      { id: 'ind-perf-2', name: 'Penguasaan Materi & QnA', detail: 'Kemampuan menjawab pertanyaan juri dengan lugas dan tepat.' }
     ]
   },
   {
-    id: 'crit-2',
+    id: 'crit-materi',
     category: 'ALL',
-    title: 'Solusi & Kualitas Teknis',
-    weight: '30%',
-    description: 'Menilai kerapihan analisis akar masalah, kompleksitas rekayasa teknis, serta keandalan uji coba solusi.',
+    title: 'Perbaikan Materi (Penilaian Juri)',
+    weight: '4%',
+    description: 'Menilai kualitas perbaikan riset, kelengkapan data, kedalaman analisa, dan hasil konkrit dari perbaikan materi.',
     indicators: [
-      { id: 'ind-2-1', name: 'Metodologi Analisis Masalah', detail: 'Kedalaman penggunaan alat analisis (Fishbone Diagram, 5-Why Analysis, PDCA / 8-Steps).' },
-      { id: 'ind-2-2', name: 'Kompleksitas & Kualitas Teknis', detail: 'Tingkat kesulitan teknis solusi dan tingkat keandalan rekayasa yang diterapkan.' },
-      { id: 'ind-2-3', name: 'Validasi & Standardisasi SOP', detail: 'Bukti hasil trial/praktek langsung dan pembentukan SOP / instruksi kerja baru.' }
-    ]
-  },
-  {
-    id: 'crit-3',
-    category: 'ALL',
-    title: 'Presentasi & Keterlibatan Tim',
-    weight: '20%',
-    description: 'Menilai kekompakan tim, keaktifan setiap anggota, kualitas penyampaian presentasi, alat peraga, dan jawaban Q&A.',
-    indicators: [
-      { id: 'ind-3-1', name: 'Keterlibatan & Kekompakan Tim', detail: 'Partisipasi aktif seluruh anggota tim QCC/SS saat mempresentasikan dan menjawab pertanyaan juri.' },
-      { id: 'ind-3-2', name: 'Kejelasan & Alat Peraga (Props)', detail: 'Ketersediaan prototype/alat peraga, animasi/slide visual yang komunikatif dan menarik.' },
-      { id: 'ind-3-3', name: 'Ketepatan Waktu & Sesi Tanya Jawab', detail: 'Disiplin alokasi waktu presentasi serta ketepatan dan keyakinan dalam memberikan jawaban.' }
-    ]
-  },
-  {
-    id: 'crit-4',
-    category: 'ALL',
-    title: 'Keberlanjutan & Potensi Replikasi',
-    weight: '20%',
-    description: 'Menilai kemudahan replikasi inovasi di lini/pabrik lain serta sistem pemeliharaan pasca-kegiatan.',
-    indicators: [
-      { id: 'ind-4-1', name: 'Potensi Replikasi Area Lain', detail: 'Tingkat kemudahan ide untuk diterapkan di departemen, mesin, atau cabang lain.' },
-      { id: 'ind-4-2', name: 'Kemudahan Maintenance System', detail: 'Kemudahan perawatan perangkat/sistem baru oleh tim operasional harian.' },
-      { id: 'ind-4-3', name: 'Dampak Jangka Panjang', detail: 'Komitmen manajemen dan potensi kontribusi berkelanjutan bagi ekosistem perusahaan.' }
+      { id: 'ind-mat-1', name: 'Kelengkapan & Kedalaman Data', detail: 'Akurasi data pendukung dan metode perbaikan yang diterapkan.' },
+      { id: 'ind-mat-2', name: 'Standardisasi & Dampak Hasil', detail: 'Bukti perbaikan dan keberlanjutan hasil karya inovasi.' }
     ]
   }
 ];
 
 export function calculateSingleJudgeTotal(criteria: ScoreCriteria): number {
-  const score = 
-    (criteria.inovasiDampak * 0.30) +
-    (criteria.solusiTeknis * 0.30) +
-    (criteria.presentasiExecution * 0.20) +
-    (criteria.keberlanjutanReplikasi * 0.20);
+  const perf = criteria.performance || 0;
+  const mat = criteria.perbaikanMateri || 0;
+  // Average scale 0-100
+  const score = (perf + mat) / 2;
   return Number(score.toFixed(2));
+}
+
+export function subscribePublicVotes(callback: (votes: PublicVote[]) => void) {
+  const q = query(collection(db, PUBLIC_VOTES_COL));
+  return onSnapshot(q, (snapshot) => {
+    const list: PublicVote[] = [];
+    snapshot.forEach((d) => {
+      list.push({ id: d.id, ...d.data() } as PublicVote);
+    });
+    callback(list);
+  }, (err) => {
+    console.warn("Notice: subscribing to public votes offline/retry:", err.message || err);
+  });
+}
+
+export async function submitPublicVote(
+  participantId: string, 
+  category: string, 
+  voterGroup: string,
+  voterToken: string,
+  score?: number,
+  comment?: string
+) {
+  const cleanGroup = voterGroup.trim();
+  const groupKey = cleanGroup.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  const safeKey = groupKey || `voter_${Date.now()}`;
+  const docId = `${category}_${safeKey}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  const voteDocRef = doc(db, PUBLIC_VOTES_COL, docId);
+
+  const voteData: PublicVote = {
+    id: docId,
+    participantId,
+    category,
+    voterToken,
+    voterGroup: cleanGroup,
+    score: score || 85,
+    comment: comment || '',
+    votedAt: new Date().toISOString()
+  };
+
+  await setDoc(voteDocRef, voteData);
+}
+
+export async function seedDummyVotesIfEmpty(participants: Participant[]) {
+  try {
+    const snapshot = await getDocs(collection(db, PUBLIC_VOTES_COL));
+    if (snapshot.empty && participants.length > 0) {
+      const categories: ('QCC-Rising' | 'QCC-Leading' | 'SS')[] = ['QCC-Rising', 'QCC-Leading', 'SS'];
+
+      for (const cat of categories) {
+        const catParticipants = participants.filter((p) => getParticipantCategoryKey(p) === cat);
+        if (catParticipants.length === 0) continue;
+
+        // Seed votes for 11 voter groups
+        for (let g = 1; g <= 11; g++) {
+          const voterGroup = `Kelompok ${g}`;
+          const groupKey = voterGroup.toLowerCase().replace(/\s+/g, '_');
+          const docId = `${cat}_${groupKey}`;
+
+          // Distribute 11 voter groups evenly across participants in this category
+          const assignedIndex = (g - 1) % catParticipants.length;
+          const assignedParticipant = catParticipants[assignedIndex];
+
+          const voteData: PublicVote = {
+            id: docId,
+            participantId: assignedParticipant.id,
+            category: cat,
+            voterToken: `dummy_token_group_${g}`,
+            voterGroup: voterGroup,
+            score: Math.min(100, Math.max(75, 80 + (g % 5) * 3)),
+            comment: `Suara dari ${voterGroup} untuk karya inovasi ${assignedParticipant.name}`,
+            votedAt: new Date().toISOString()
+          };
+
+          await setDoc(doc(db, PUBLIC_VOTES_COL, docId), voteData);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Notice: seedDummyVotesIfEmpty offline or skipped:", err);
+  }
+}
+
+export async function clearAllPublicVotes() {
+  try {
+    const snapshot = await getDocs(collection(db, PUBLIC_VOTES_COL));
+    for (const docSnap of snapshot.docs) {
+      await deleteDoc(doc(db, PUBLIC_VOTES_COL, docSnap.id));
+    }
+  } catch (err) {
+    console.warn("Notice: clearAllPublicVotes error:", err);
+  }
+}
+
+
+export async function clearAllScores() {
+  try {
+    const snapshot = await getDocs(collection(db, SCORES_COL));
+    for (const docSnap of snapshot.docs) {
+      await deleteDoc(doc(db, SCORES_COL, docSnap.id));
+    }
+  } catch (err) {
+    console.warn("Notice: clearAllScores error:", err);
+  }
 }
 
 export function subscribeSettings(callback: (settings: ContestSettings) => void) {
@@ -98,10 +177,11 @@ export function subscribeSettings(callback: (settings: ContestSettings) => void)
         eventName: 'INNOPARTY 2026 - FOOTBALL INNOVATION CHAMPIONSHIP',
         activeCategory: 'ALL'
       };
-      setDoc(docRef, defaultSettings).then(() => callback(defaultSettings));
+      callback(defaultSettings);
+      setDoc(docRef, defaultSettings).catch((err) => console.warn("Notice: writing default settings:", err));
     }
   }, (err) => {
-    console.error("Error subscribing to settings:", err);
+    console.warn("Notice: subscribing to settings:", err);
   });
 }
 
@@ -123,7 +203,7 @@ export function subscribeParticipants(callback: (participants: Participant[]) =>
     } catch (e) {}
     callback(list);
   }, (err) => {
-    console.error("Error subscribing to participants:", err);
+    console.warn("Notice: subscribing to participants offline/retry:", err.message || err);
   });
 }
 
@@ -136,7 +216,7 @@ export function subscribeScores(callback: (scores: JudgeScore[]) => void) {
     });
     callback(list);
   }, (err) => {
-    console.error("Error subscribing to scores:", err);
+    console.warn("Notice: subscribing to scores offline/retry:", err.message || err);
   });
 }
 
@@ -144,7 +224,8 @@ export async function saveJudgeScore(
   participantId: string,
   judgeId: 1 | 2 | 3,
   criteriaScores: ScoreCriteria,
-  notes: string
+  notes: string,
+  judgeName?: string
 ) {
   const docId = `${participantId}_juri${judgeId}`;
   const totalScore = calculateSingleJudgeTotal(criteriaScores);
@@ -152,6 +233,7 @@ export async function saveJudgeScore(
     id: docId,
     participantId,
     judgeId,
+    judgeName: judgeName?.trim() || `Juri ${judgeId}`,
     criteriaScores,
     totalScore,
     notes,
@@ -178,11 +260,15 @@ export async function deleteParticipant(id: string) {
 }
 
 export async function seedInitialDataIfEmpty() {
-  const snapshot = await getDocs(collection(db, PARTICIPANTS_COL));
-  if (snapshot.empty) {
-    for (const item of INITIAL_PARTICIPANTS) {
-      await addParticipant(item);
+  try {
+    const snapshot = await getDocs(collection(db, PARTICIPANTS_COL));
+    if (snapshot.empty) {
+      for (const item of INITIAL_PARTICIPANTS) {
+        await addParticipant(item);
+      }
     }
+  } catch (err) {
+    console.warn("Notice: seedInitialDataIfEmpty skipped or offline:", err);
   }
 }
 
@@ -197,7 +283,7 @@ export function subscribeMasterCriteria(callback: (criteria: Criterion[]) => voi
     list.sort((a, b) => a.id.localeCompare(b.id));
     callback(list);
   }, (err) => {
-    console.error("Error subscribing to master criteria:", err);
+    console.warn("Notice: subscribing to master criteria offline/retry:", err.message || err);
   });
 }
 
@@ -240,71 +326,87 @@ export function getParticipantCategoryKey(p: { stream: string; levelCategory: st
   return 'QCC-Rising';
 }
 
-export function isJuri3RevealedForCategory(categoryKey: string, settings?: ContestSettings | boolean): boolean {
-  if (typeof settings === 'boolean') return settings;
-  if (!settings) return false;
-  if (settings.juri3RevealedCategories) {
-    if (categoryKey === 'QCC-Rising' || categoryKey === 'Rising') {
-      return !!settings.juri3RevealedCategories['QCC-Rising'];
-    }
-    if (categoryKey === 'QCC-Leading' || categoryKey === 'Leading') {
-      return !!settings.juri3RevealedCategories['QCC-Leading'];
-    }
-    if (categoryKey === 'SS') {
-      return !!settings.juri3RevealedCategories['SS'];
-    }
-  }
-  return !!settings.juri3Revealed;
+export function isJuri3RevealedForCategory(_categoryKey?: string, _settings?: ContestSettings | boolean): boolean {
+  return true;
 }
 
 export function computeLeaderboard(
   participants: Participant[],
   scores: JudgeScore[],
-  settings: ContestSettings | boolean
+  publicVotes: PublicVote[] = [],
+  _settings?: ContestSettings | boolean
 ): LeaderboardEntry[] {
-  const settingsObj: ContestSettings = typeof settings === 'boolean'
-    ? { juri3Revealed: settings, eventName: '', activeCategory: 'ALL' }
-    : settings;
-
   const entries: LeaderboardEntry[] = participants.map((participant) => {
     const pCat = getParticipantCategoryKey(participant);
-    const juri3Revealed = isJuri3RevealedForCategory(pCat, settingsObj);
 
+    // 1. Preliminary Score (90%)
+    const preliminaryScore = participant.preliminaryScore || 0;
+    const preliminaryScoreContrib = Number((preliminaryScore * 0.90).toFixed(2));
+
+    // 2. Judge Scores (Performance 4% & Perbaikan Materi 4%)
     const pScores = scores.filter((s) => s.participantId === participant.id);
 
     const j1 = pScores.find((s) => s.judgeId === 1);
     const j2 = pScores.find((s) => s.judgeId === 2);
     const j3 = pScores.find((s) => s.judgeId === 3);
 
-    const juri1Score = j1 ? j1.totalScore : null;
-    const juri2Score = j2 ? j2.totalScore : null;
-    const juri3Score = j3 ? j3.totalScore : null;
+    const juri1Score = j1 ? calculateSingleJudgeTotal(j1.criteriaScores) : null;
+    const juri2Score = j2 ? calculateSingleJudgeTotal(j2.criteriaScores) : null;
+    const juri3Score = j3 ? calculateSingleJudgeTotal(j3.criteriaScores) : null;
 
-    const availableScores: number[] = [];
-    if (juri1Score !== null) availableScores.push(juri1Score);
-    if (juri2Score !== null) availableScores.push(juri2Score);
+    const activeJudges: JudgeScore[] = [];
+    if (j1) activeJudges.push(j1);
+    if (j2) activeJudges.push(j2);
+    if (j3) activeJudges.push(j3);
 
-    // Only include Juri 3 score if juri3Revealed is TRUE for this participant's category
-    if (juri3Revealed && juri3Score !== null) {
-      availableScores.push(juri3Score);
+    let avgPerformance: number | null = null;
+    let performanceContrib = 0;
+    let avgPerbaikanMateri: number | null = null;
+    let perbaikanMateriContrib = 0;
+
+    if (activeJudges.length > 0) {
+      const totalPerf = activeJudges.reduce((acc, s) => acc + (s.criteriaScores?.performance || 0), 0);
+      avgPerformance = Number((totalPerf / activeJudges.length).toFixed(2));
+      performanceContrib = Number((avgPerformance * 0.04).toFixed(2));
+
+      const totalMat = activeJudges.reduce((acc, s) => acc + (s.criteriaScores?.perbaikanMateri || 0), 0);
+      avgPerbaikanMateri = Number((totalMat / activeJudges.length).toFixed(2));
+      perbaikanMateriContrib = Number((avgPerbaikanMateri * 0.04).toFixed(2));
     }
 
-    let calculatedTotal = 0;
-    if (availableScores.length > 0) {
-      const sum = availableScores.reduce((acc, curr) => acc + curr, 0);
-      calculatedTotal = Number((sum / availableScores.length).toFixed(2));
-    }
+    // 3. Public Votes (2%)
+    const MAX_CATEGORY_VOTES = 11;
+    const catVotes = publicVotes.filter((v) => v.category === pCat);
+    const totalCategoryVotes = catVotes.length; // For informational purposes
+    const publicVoteCount = catVotes.filter((v) => v.participantId === participant.id).length;
+    
+    // Formula: (participant_votes / MAX_CATEGORY_VOTES) * 2
+    // If somehow they get more than 11 votes, it caps at 11 (2% max)
+    const cappedPublicVoteCount = Math.min(publicVoteCount, MAX_CATEGORY_VOTES);
+    const publicVoteContrib = Number(((cappedPublicVoteCount / MAX_CATEGORY_VOTES) * 2).toFixed(2));
+
+    // Total Score
+    const calculatedTotal = Number((preliminaryScoreContrib + performanceContrib + perbaikanMateriContrib + publicVoteContrib).toFixed(2));
 
     return {
       participant,
+      preliminaryScore,
+      preliminaryScoreContrib,
+      avgPerformance,
+      performanceContrib,
+      avgPerbaikanMateri,
+      perbaikanMateriContrib,
+      publicVoteCount,
+      totalCategoryVotes,
+      publicVoteContrib,
+      calculatedTotal,
+      evaluatedCount: activeJudges.length,
+      hasJuri1: !!j1,
+      hasJuri2: !!j2,
+      hasJuri3: !!j3,
       juri1Score,
       juri2Score,
       juri3Score,
-      calculatedTotal,
-      evaluatedCount: availableScores.length,
-      hasJuri1: juri1Score !== null,
-      hasJuri2: juri2Score !== null,
-      hasJuri3: juri3Score !== null,
       rank: 0
     };
   });
@@ -319,3 +421,4 @@ export function computeLeaderboard(
 
   return entries;
 }
+
