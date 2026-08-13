@@ -250,6 +250,28 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
             </div>
           </div>
 
+          {/* SIMULATION NOTE */}
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 shadow-sm text-sm text-blue-900">
+            <h4 className="font-bold flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              Informasi Perhitungan Nilai Akhir
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5 text-xs">
+                <p><strong>Penyisihan (Bobot 90%):</strong> Diambil dari skor penyisihan di master data dikalikan 90%.</p>
+                <p><strong>Juri (Bobot 8%):</strong> Diambil dari rata-rata nilai Juri (Skala 100) dikalikan 8%.</p>
+                <p><strong>Public Vote (Bobot 2%):</strong> (Jumlah Suara Tim / 11 Maks Suara) × 2 Poin Penuh.</p>
+              </div>
+              <div className="bg-white/60 p-3 rounded-xl border border-blue-100 text-xs font-mono">
+                <div className="font-bold text-[10px] uppercase tracking-wider text-blue-500 mb-1">Contoh Simulasi Tim A</div>
+                <div>Penyisihan (90%) : 85 × 90% = 76.50 Poin</div>
+                <div>Juri (8%)       : 80 × 8%  =  6.40 Poin</div>
+                <div>Public Vote (2%): (11/11) × 2 =  2.00 Poin +</div>
+                <div className="border-t border-blue-200 mt-1 pt-1 font-bold">Total Nilai Akhir = 84.90</div>
+              </div>
+            </div>
+          </div>
+
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">

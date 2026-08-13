@@ -80,6 +80,7 @@ export default function App() {
       setIsDirectJudgeOrVote(true);
     } else if (tabParam === 'scoring' || viewParam === 'scoring') {
       setActiveTab('scoring');
+      setIsDirectJudgeOrVote(true);
     } else if (tabParam === 'podium' || viewParam === 'podium') {
       setActiveTab('podium');
     } else if (tabParam === 'master' || viewParam === 'master') {
@@ -225,20 +226,22 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-red-500 selection:text-white">
       
       {/* Navbar Navigation */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        activeJudgeId={activeJudgeId}
-        juri3Revealed={settings.juri3Revealed}
-        isAdminLoggedIn={isAdminLoggedIn}
-        onAdminLogout={handleAdminLogout}
-        onExitJudgeMode={() => {
-          setActiveJudgeId(null);
-          setActiveTab('podium');
-          // Clean URL param
-          window.history.replaceState({}, '', window.location.pathname);
-        }}
-      />
+      {!isDirectJudgeOrVote && (
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          activeJudgeId={activeJudgeId}
+          juri3Revealed={settings.juri3Revealed}
+          isAdminLoggedIn={isAdminLoggedIn}
+          onAdminLogout={handleAdminLogout}
+          onExitJudgeMode={() => {
+            setActiveJudgeId(null);
+            setActiveTab('podium');
+            // Clean URL param
+            window.history.replaceState({}, '', window.location.pathname);
+          }}
+        />
+      )}
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">

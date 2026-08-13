@@ -77,30 +77,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('scoring')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] ${
-                  activeTab === 'scoring'
-                    ? 'bg-red-600 text-white shadow-sm font-black'
-                    : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-                }`}
-              >
-                <Award className="w-4 h-4" />
-                <span>Form Penilaian</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('vote')}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] ${
-                  activeTab === 'vote'
-                    ? 'bg-red-600 text-white shadow-sm font-black'
-                    : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-                }`}
-              >
-                <Heart className="w-4 h-4" />
-                <span>Penilaian Public</span>
-              </button>
-
-              <button
                 onClick={() => setActiveTab('master')}
                 className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[40px] ${
                   activeTab === 'master'
@@ -165,24 +141,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Trophy className="w-4 h-4 shrink-0" />
               <span>Klasemen</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('scoring')}
-              className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 min-h-[40px] active:scale-95 transition-transform ${
-                activeTab === 'scoring' ? 'bg-red-600 text-white font-black' : 'bg-slate-100 text-slate-600'
-              }`}
-            >
-              <Award className="w-4 h-4 shrink-0" />
-              <span>Penilaian</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('vote')}
-              className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 min-h-[40px] active:scale-95 transition-transform ${
-                activeTab === 'vote' ? 'bg-red-600 text-white font-black' : 'bg-slate-100 text-slate-600'
-              }`}
-            >
-              <Heart className="w-4 h-4 shrink-0" />
-              <span>Public</span>
             </button>
             <button
               onClick={() => setActiveTab('master')}

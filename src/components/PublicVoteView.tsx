@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Participant, PublicVote } from '../types';
-import { submitPublicVote, seedDummyVotesIfEmpty, clearAllPublicVotes } from '../lib/contestService';
+import { submitPublicVote } from '../lib/contestService';
 import { CheckCircle2, Heart, Award, Sparkles, RefreshCw, Send, Users, Check, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -24,7 +24,6 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
   const [comment, setComment] = useState<string>('');
   
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [isSeeding, setIsSeeding] = useState<boolean>(false);
   const [voteSuccessMsg, setVoteSuccessMsg] = useState<string | null>(null);
 
   // Auto-detect category & pre-selected participant from URL query parameters or props
@@ -63,13 +62,6 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
     }
   }, [participants, initialCategoryFilter]);
 
-  // Auto-seed initial dummy votes if empty
-  useEffect(() => {
-    if (publicVotes.length === 0 && participants.length > 0) {
-      seedDummyVotesIfEmpty(participants);
-    }
-  }, [publicVotes.length, participants]);
-
   // Generate device token if needed
   useEffect(() => {
     let token = localStorage.getItem('innoparty_voter_token');
@@ -102,13 +94,16 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
   // All votes cast in the active category
   const categoryVotes = publicVotes.filter((v) => v.category === activeCategoryFilter);
 
-  // Check if current selected group has already voted in active category
-  const selectedGroupVote = categoryVotes.find(
-    (v) => v.voterGroup === selectedGroup || v.id === `${activeCategoryFilter}_${selectedGroup.toLowerCase().replace(/\s+/g, '_')}`
-  );
+  // Check if current device has already voted in active category
+  const myVote = categoryVotes.find((v) => v.voterToken === voterToken);
 
   const handleVoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (myVote) {
+      alert('Perangkat Anda sudah memberikan suara untuk kategori ini.');
+      return;
+    }
+    
     if (!selectedParticipantId || !selectedGroup.trim()) {
       alert('Silakan masukkan nama pemilih dan pilih 1 tim inovasi.');
       return;
@@ -137,27 +132,6 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
     } catch (err: any) {
       setSubmitting(false);
       alert(err.message || 'Gagal mengirim suara.');
-    }
-  };
-
-  const handleSeedDummyVotes = async () => {
-    if (confirm('Reset dan muat ulang data voting untuk 11 kelompok pemilih di semua kategori?')) {
-      setIsSeeding(true);
-      await clearAllPublicVotes();
-      await seedDummyVotesIfEmpty(participants);
-      setIsSeeding(false);
-      setVoteSuccessMsg('Data voting 11 kelompok berhasil dimuat ulang!');
-      setTimeout(() => setVoteSuccessMsg(null), 3000);
-    }
-  };
-
-  const handleClearVotes = async () => {
-    if (confirm('Hapus seluruh suara penilaian public?')) {
-      setIsSeeding(true);
-      await clearAllPublicVotes();
-      setIsSeeding(false);
-      setVoteSuccessMsg('Semua data voting public telah dikosongkan.');
-      setTimeout(() => setVoteSuccessMsg(null), 3000);
     }
   };
 
@@ -211,6 +185,20 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
       {/* MAIN FORM */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
         
+        {myVote && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 flex items-start gap-3">
+            <div className="mt-0.5">
+              <CheckCircle2 className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-amber-900 uppercase tracking-tight">Anda Sudah Memilih di Kategori Ini</h4>
+              <p className="text-xs text-amber-700 mt-1">
+                Perangkat ini telah tercatat memberikan dukungan kepada tim <strong className="font-black text-amber-900">{participants.find(p => p.id === myVote.participantId)?.name}</strong>. Anda tidak dapat melakukan *voting* lebih dari 1 kali dalam kategori yang sama.
+              </p>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleVoteSubmit} className="space-y-6">
 
           {/* Pemilih Input Field (Primary Form Field) */}
@@ -229,14 +217,15 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
               type="text"
               value={selectedGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
+              disabled={!!myVote}
               placeholder="Masukkan Nama Anda / Nama Kelompok Pemilih..."
-              className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-300 bg-white font-bold text-slate-900 text-sm focus:border-red-600 focus:ring-4 focus:ring-red-600/10 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal shadow-sm"
+              className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-300 bg-white font-bold text-slate-900 text-sm focus:border-red-600 focus:ring-4 focus:ring-red-600/10 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal shadow-sm disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
               required
             />
           </div>
           
           {/* PILIH TIM INOVASI */}
-          <div className="space-y-3">
+          <div className={`space-y-3 ${myVote ? 'opacity-50 pointer-events-none' : ''}`}>
             <span className="text-xs font-black text-slate-700 uppercase tracking-wider block">
               Pilih 1 Tim Inovasi ({categoryParticipants.length} Tim Tersedia)
             </span>
@@ -294,12 +283,12 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
           {/* SUBMIT BUTTON */}
           <button
             type="submit"
-            disabled={submitting || !selectedParticipantId || !selectedGroup.trim()}
+            disabled={!!myVote || submitting || !selectedParticipantId || !selectedGroup.trim()}
             className="w-full py-4 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center space-x-2 active:scale-98 cursor-pointer"
           >
             <Send className="w-4 h-4" />
             <span>
-              {submitting ? 'MENGIRIM SUARA...' : `KIRIM SUARA ${selectedGroup.trim() ? `(${selectedGroup.trim().toUpperCase()})` : ''}`}
+              {myVote ? 'SUARA SUDAH DIBERIKAN' : submitting ? 'MENGIRIM SUARA...' : `KIRIM SUARA ${selectedGroup.trim() ? `(${selectedGroup.trim().toUpperCase()})` : ''}`}
             </span>
           </button>
 

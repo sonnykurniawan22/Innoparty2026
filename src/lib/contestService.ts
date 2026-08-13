@@ -84,9 +84,8 @@ export async function submitPublicVote(
   comment?: string
 ) {
   const cleanGroup = voterGroup.trim();
-  const groupKey = cleanGroup.toLowerCase().replace(/[^a-z0-9_]/g, '_');
-  const safeKey = groupKey || `voter_${Date.now()}`;
-  const docId = `${category}_${safeKey}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  // Gunakan voterToken sebagai bagian dari ID dokumen agar satu perangkat hanya bisa memiliki 1 suara per kategori
+  const docId = `${category}_${voterToken}`;
   const voteDocRef = doc(db, PUBLIC_VOTES_COL, docId);
 
   const voteData: PublicVote = {
@@ -101,46 +100,6 @@ export async function submitPublicVote(
   };
 
   await setDoc(voteDocRef, voteData);
-}
-
-export async function seedDummyVotesIfEmpty(participants: Participant[]) {
-  try {
-    const snapshot = await getDocs(collection(db, PUBLIC_VOTES_COL));
-    if (snapshot.empty && participants.length > 0) {
-      const categories: ('QCC-Rising' | 'QCC-Leading' | 'SS')[] = ['QCC-Rising', 'QCC-Leading', 'SS'];
-
-      for (const cat of categories) {
-        const catParticipants = participants.filter((p) => getParticipantCategoryKey(p) === cat);
-        if (catParticipants.length === 0) continue;
-
-        // Seed votes for 11 voter groups
-        for (let g = 1; g <= 11; g++) {
-          const voterGroup = `Kelompok ${g}`;
-          const groupKey = voterGroup.toLowerCase().replace(/\s+/g, '_');
-          const docId = `${cat}_${groupKey}`;
-
-          // Distribute 11 voter groups evenly across participants in this category
-          const assignedIndex = (g - 1) % catParticipants.length;
-          const assignedParticipant = catParticipants[assignedIndex];
-
-          const voteData: PublicVote = {
-            id: docId,
-            participantId: assignedParticipant.id,
-            category: cat,
-            voterToken: `dummy_token_group_${g}`,
-            voterGroup: voterGroup,
-            score: Math.min(100, Math.max(75, 80 + (g % 5) * 3)),
-            comment: `Suara dari ${voterGroup} untuk karya inovasi ${assignedParticipant.name}`,
-            votedAt: new Date().toISOString()
-          };
-
-          await setDoc(doc(db, PUBLIC_VOTES_COL, docId), voteData);
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("Notice: seedDummyVotesIfEmpty offline or skipped:", err);
-  }
 }
 
 export async function clearAllPublicVotes() {
