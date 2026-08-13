@@ -19,6 +19,7 @@ export type StreamCategory = 'QCC' | 'SS';
 export interface Participant {
   id: string;
   name: string;
+  teamCode?: string; // ID Tim khusus dari Google Sheets
   projectTitle: string;
   levelCategory: LevelCategory;
   stream: StreamCategory;
@@ -64,6 +65,16 @@ export interface ContestSettings {
   eventName: string;
   activeCategory: string;
   updatedAt?: string;
+  
+  // Google Sheets Integration Settings
+  qccSpreadsheetId?: string;
+  ssSpreadsheetId?: string;
+  qccJuri1SheetName?: string;
+  qccJuri2SheetName?: string;
+  qccJuri3SheetName?: string;
+  ssJuri1SheetName?: string;
+  ssJuri2SheetName?: string;
+  ssJuri3SheetName?: string;
 }
 
 export interface LeaderboardEntry {

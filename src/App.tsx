@@ -11,7 +11,6 @@ import {
 
 import { Navbar } from './components/Navbar';
 import { LivePodium } from './components/LivePodium';
-import { ScoringForm } from './components/ScoringForm';
 import { MasterParticipants } from './components/MasterParticipants';
 import { JudgeQRModal } from './components/JudgeQRModal';
 import { AdminSettings } from './components/AdminSettings';
@@ -266,26 +265,7 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* TAB 2: FORM PENILAIAN JURI */}
-          {activeTab === 'scoring' && (
-            <motion.div
-              key="scoring"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ScoringForm
-                participants={participants}
-                scores={scores}
-                initialJudgeId={activeJudgeId}
-                initialParticipantId={activeParticipantId}
-                onScoreSubmitted={() => {
-                  // Option to switch to podium after score submit
-                }}
-              />
-            </motion.div>
-          )}
+          
 
           {/* TAB 3: MASTER PESERTA */}
           {activeTab === 'master' && (

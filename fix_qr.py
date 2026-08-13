@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from 'react';
+with open('src/components/JudgeQRModal.tsx', 'r') as f:
+    content = f.read()
+
+import re
+
+# We will completely rewrite JudgeQRModal.tsx to be clean.
+clean_modal = """import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { motion, AnimatePresence } from 'motion/react';
 import { Participant } from '../types';
@@ -187,3 +193,7 @@ export const JudgeQRModal: React.FC<{ participants: Participant[] }> = ({ partic
     </div>
   );
 };
+"""
+
+with open('src/components/JudgeQRModal.tsx', 'w') as f:
+    f.write(clean_modal)

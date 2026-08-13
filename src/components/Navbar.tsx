@@ -97,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <QrCode className="w-4 h-4" />
-                <span>QR Barcode</span>
+                <span>QR Code Public</span>
               </button>
 
               <button
@@ -158,7 +158,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               <QrCode className="w-4 h-4 shrink-0" />
-              <span>QR Code</span>
+              <span>QR Code Public</span>
             </button>
             <button
               onClick={() => setActiveTab('admin')}

@@ -14,6 +14,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
   // Form State for Adding/Editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [teamCode, setTeamCode] = useState('');
   const [projectTitle, setProjectTitle] = useState('');
   const [preliminaryScore, setPreliminaryScore] = useState<number | string>(0);
   const [photoUrl, setPhotoUrl] = useState('');
@@ -24,6 +25,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
   const resetForm = () => {
     setEditingId(null);
     setName('');
+    setTeamCode('');
     setProjectTitle('');
     setPreliminaryScore(0);
     setPhotoUrl('');
@@ -33,6 +35,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
   const handleStartEdit = (p: Participant) => {
     setEditingId(p.id);
     setName(p.name);
+    setTeamCode(p.teamCode || '');
     setProjectTitle(p.projectTitle);
     setPreliminaryScore(p.preliminaryScore || 0);
     setPhotoUrl(p.photoUrl || '');
@@ -47,7 +50,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !projectTitle.trim()) return;
+    if (!name.trim() || !projectTitle.trim() || !teamCode.trim()) { alert('Nama, Kode Tim, dan Judul wajib diisi'); return; }
 
     let levelCategory: LevelCategory = 'Rising';
     let stream: StreamCategory = 'QCC';
@@ -193,6 +196,20 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
             </div>
 
             <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Kode Tim (Diambil dari Excel):
+              </label>
+              <input
+                type="text"
+                required
+                value={teamCode}
+                onChange={(e) => setTeamCode(e.target.value)}
+                placeholder="Misal: R-01 atau E1"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
               <label className="block text-xs font-bold text-slate-700  mb-1">
                 Judul Project Inovasi:
               </label>
@@ -328,6 +345,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
               <thead className="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider">
                 <tr>
                   <th className="py-3 px-3">NAMA TIM / PESERTA</th>
+                  <th className="py-3 px-3">KODE TIM</th>
                   <th className="py-3 px-3">JUDUL INOVASI</th>
                   <th className="py-3 px-3 text-center">NILAI PENYISIHAN</th>
                   <th className="py-3 px-3 text-center">KATEGORI</th>
@@ -350,6 +368,9 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
                           <div className="font-bold text-slate-900">{p.name}</div>
                         </div>
                       </div>
+                    </td>
+                    <td className="py-3.5 px-3 font-semibold text-slate-700">
+                      {p.teamCode || '-'}
                     </td>
                     <td className="py-3.5 px-3 text-slate-600 max-w-xs truncate">
                       {p.projectTitle}

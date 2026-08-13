@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ContestSettings, Participant, JudgeScore, PublicVote } from '../types';
-import { updateContestSettings, computeLeaderboard, getParticipantCategoryKey, clearAllScores, clearAllPublicVotes } from '../lib/contestService';
+import { updateContestSettings, computeLeaderboard, getParticipantCategoryKey, clearAllScores, clearAllPublicVotes, saveJudgeScore } from '../lib/contestService';
 import { 
   Settings, 
   Sparkles, 
@@ -34,6 +34,18 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
   publicVotes = [] 
 }) => {
   const [eventName, setEventName] = useState(settings.eventName || 'INNOPARTY 2026 - FOOTBALL INNOVATION CHAMPIONSHIP');
+
+  const [qccSpreadsheetId, setQccSpreadsheetId] = useState(settings.qccSpreadsheetId || '');
+  const [ssSpreadsheetId, setSsSpreadsheetId] = useState(settings.ssSpreadsheetId || '');
+  const [qccJuri1, setQccJuri1] = useState(settings.qccJuri1SheetName ?? 'Juri 1');
+  const [qccJuri2, setQccJuri2] = useState(settings.qccJuri2SheetName ?? 'Juri 2');
+  const [qccJuri3, setQccJuri3] = useState(settings.qccJuri3SheetName ?? 'Juri 3');
+  const [ssJuri1, setSsJuri1] = useState(settings.ssJuri1SheetName ?? 'Juri 1');
+  const [ssJuri2, setSsJuri2] = useState(settings.ssJuri2SheetName ?? 'Juri 2');
+  const [ssJuri3, setSsJuri3] = useState(settings.ssJuri3SheetName ?? 'Juri 3');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('');
+
   const [activeSubTab, setActiveSubTab] = useState<'summary' | 'details' | 'config'>('summary');
   
   const [isUpdating, setIsUpdating] = useState(false);
@@ -58,6 +70,140 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
       item.participant.projectTitle.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCat && matchesSearch;
   });
+
+  
+  const extractSpreadsheetId = (input: string) => {
+    if (!input) return '';
+    const match = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    return match ? match[1] : input.trim();
+  };
+
+  
+  const [isAutoSync, setIsAutoSync] = useState(false);
+  const syncIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    if (isAutoSync) {
+      // Run once immediately, then every 10 seconds
+      handleSyncScores();
+      syncIntervalRef.current = setInterval(() => {
+        handleSyncScores();
+      }, 10000);
+    } else {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+      }
+    }
+    return () => {
+      if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
+    };
+  }, [isAutoSync]);
+
+  const handleSaveSpreadsheetConfig = async () => {
+    try {
+      setIsUpdating(true);
+      await updateContestSettings({
+        qccSpreadsheetId,
+        ssSpreadsheetId,
+        qccJuri1SheetName: qccJuri1,
+        qccJuri2SheetName: qccJuri2,
+        qccJuri3SheetName: qccJuri3,
+        ssJuri1SheetName: ssJuri1,
+        ssJuri2SheetName: ssJuri2,
+        ssJuri3SheetName: ssJuri3
+      });
+      setIsUpdating(false);
+      setSuccessMsg('Konfigurasi Google Sheets Berhasil Disimpan!');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error("Error updating sheet config:", err);
+      setIsUpdating(false);
+    }
+  };
+
+  const importSheetsToFirestore = async (sheetData: Record<string, any[]>, stream: string, judgeMapping: Record<string, number>) => {
+    const batchPromises = [];
+    
+    for (const [sheetName, rows] of Object.entries(sheetData)) {
+      const judgeId = judgeMapping[sheetName];
+      if (!judgeId) continue;
+      
+      for (const row of rows) {
+        const p = participants.find(part => {
+          if (part.stream !== stream) return false;
+          // Match by Kode Tim first, then fallback to name matching
+          if (part.teamCode && row.teamCode && part.teamCode.toLowerCase() === row.teamCode.toLowerCase()) {
+            return true;
+          }
+          const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return normalize(part.name) === normalize(row.teamName);
+        });
+        
+        if (p) {
+          batchPromises.push(saveJudgeScore(
+            p.id,
+            judgeId as 1 | 2 | 3,
+            { performance: row.performance, perbaikanMateri: row.perbaikanMateri },
+            "Disinkronisasi dari Google Sheets",
+            "Juri Spreadsheet"
+          ));
+        }
+      }
+    }
+    
+    await Promise.all(batchPromises);
+  };
+
+  const handleSyncScores = async () => {
+    setIsSyncing(true);
+    setSyncStatus('Sedang menarik data dari Google Sheets...');
+    
+    try {
+      const fetchSheets = async (url: string, id: string, sheets: string[], stream: string, judgeMapping: Record<string, number>) => {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ spreadsheetId: extractSpreadsheetId(id), sheetNames: sheets })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setSyncStatus(`Menyimpan data ${stream} ke database...`);
+          await importSheetsToFirestore(data.data, stream, judgeMapping);
+        } else {
+          throw new Error(data.error || 'Failed to fetch');
+        }
+      };
+
+      if (qccSpreadsheetId) {
+        const qccArr = [qccJuri1, qccJuri2, qccJuri3].filter(Boolean);
+        const qccMapping: Record<string, number> = {};
+        if (qccJuri1) qccMapping[qccJuri1] = 1;
+        if (qccJuri2) qccMapping[qccJuri2] = 2;
+        if (qccJuri3) qccMapping[qccJuri3] = 3;
+        
+        setSyncStatus('Menarik data QCC...');
+        await fetchSheets('/api/read-sheets', qccSpreadsheetId, qccArr, 'QCC', qccMapping);
+      }
+      
+      if (ssSpreadsheetId) {
+        const ssArr = [ssJuri1, ssJuri2, ssJuri3].filter(Boolean);
+        const ssMapping: Record<string, number> = {};
+        if (ssJuri1) ssMapping[ssJuri1] = 1;
+        if (ssJuri2) ssMapping[ssJuri2] = 2;
+        if (ssJuri3) ssMapping[ssJuri3] = 3;
+
+        setSyncStatus('Menarik data SS...');
+        await fetchSheets('/api/read-sheets', ssSpreadsheetId, ssArr, 'SS', ssMapping);
+      }
+
+      setSyncStatus('Sinkronisasi selesai!');
+      setTimeout(() => setSyncStatus(''), 3000);
+    } catch (err: any) {
+      console.error(err);
+      setSyncStatus(`Gagal: ${err.message}`);
+    }
+    setIsSyncing(false);
+  };
 
   const handleSaveEventName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +316,143 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
       {/* SUB TAB 1: SUMMARY PENILAIAN (REKAPITULASI MATRIKS) */}
       {activeSubTab === 'summary' && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+
+          {/* VAR CONTROL - GOOGLE SHEETS */}
+          <div className="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-800 text-white mb-6 mt-4">
+            <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 mb-4 text-emerald-400">
+              <Sparkles className="w-5 h-5" />
+              KONTROL VAR: SINKRONISASI GOOGLE SHEETS JURI
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              Masukkan Link atau ID Spreadsheet untuk QCC dan SS. Klik tombol Tarik Data untuk memperbarui skor Juri secara Live.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Spreadsheet ID / Link (QCC)</label>
+                <input 
+                  type="text" 
+                  value={qccSpreadsheetId} 
+                  onChange={(e) => setQccSpreadsheetId(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  placeholder="ID / Link Spreadsheet QCC"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Spreadsheet ID / Link (SS)</label>
+                <input 
+                  type="text" 
+                  value={ssSpreadsheetId} 
+                  onChange={(e) => setSsSpreadsheetId(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  placeholder="ID / Link Spreadsheet SS"
+                />
+              </div>
+            </div>
+
+            {/* Juri QCC Sheets */}
+            <div className="mb-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
+              <h4 className="text-xs font-bold text-emerald-400 mb-3 uppercase">Nama Sheet Juri QCC</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 1 (QCC)</label>
+                  <input 
+                    type="text" 
+                    value={qccJuri1} 
+                    onChange={(e) => setQccJuri1(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 2 (QCC)</label>
+                  <input 
+                    type="text" 
+                    value={qccJuri2} 
+                    onChange={(e) => setQccJuri2(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 3 (QCC)</label>
+                  <input 
+                    type="text" 
+                    value={qccJuri3} 
+                    onChange={(e) => setQccJuri3(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Juri SS Sheets */}
+            <div className="mb-6 p-4 bg-slate-800 rounded-xl border border-slate-700">
+              <h4 className="text-xs font-bold text-emerald-400 mb-3 uppercase">Nama Sheet Juri SS</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 1 (SS)</label>
+                  <input 
+                    type="text" 
+                    value={ssJuri1} 
+                    onChange={(e) => setSsJuri1(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 2 (SS)</label>
+                  <input 
+                    type="text" 
+                    value={ssJuri2} 
+                    onChange={(e) => setSsJuri2(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 3 (SS)</label>
+                  <input 
+                    type="text" 
+                    value={ssJuri3} 
+                    onChange={(e) => setSsJuri3(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleSaveSpreadsheetConfig}
+                disabled={isUpdating}
+                className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors border border-slate-700"
+              >
+                Simpan Konfigurasi
+              </button>
+              <button
+                onClick={handleSyncScores}
+                disabled={isSyncing || isAutoSync}
+                className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/50 disabled:opacity-50"
+              >
+                {isSyncing ? 'Menarik Data...' : 'Tarik Data (Manual)'}
+              </button>
+              <button
+                onClick={() => setIsAutoSync(!isAutoSync)}
+                className={`flex-1 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg ${
+                  isAutoSync 
+                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-900/50 animate-pulse' 
+                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-900/50'
+                }`}
+              >
+                {isAutoSync ? 'Hentikan Auto-Sync' : 'Aktifkan Auto-Sync (Realtime)'}
+              </button>
+            </div>
+            
+            {syncStatus && (
+              <div className="mt-4 p-3 bg-slate-800 border border-emerald-500/30 rounded-xl flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold text-emerald-400">{syncStatus}</span>
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
