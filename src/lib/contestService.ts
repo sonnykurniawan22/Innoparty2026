@@ -381,3 +381,11 @@ export function computeLeaderboard(
   return entries;
 }
 
+export function getProxyImageUrl(url: string | undefined | null): string {
+  if (!url) return '';
+  if (url.includes('drive.google.com')) {
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}
+

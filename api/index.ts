@@ -9,30 +9,74 @@ app.use(express.json());
 const upload = multer({ storage: multer.memoryStorage() });
 
 const getGoogleAuth = () => {
-  if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-    throw new Error("Missing Google Service Account credentials in environment variables.");
-  }
-  
-  let privateKey = process.env.GOOGLE_PRIVATE_KEY;
-  privateKey = privateKey.replace(/\\n/g, '\n');
-  privateKey = privateKey.replace(/^"|"$/g, '');
-  
-  if (!privateKey.includes('\n')) {
-    const match = privateKey.match(/(-----BEGIN PRIVATE KEY-----)(.*?)(-----END PRIVATE KEY-----)/);
-    if (match) {
-      privateKey = `${match[1]}\n${match[2].replace(/\s+/g, '').match(/.{1,64}/g)?.join('\n')}\n${match[3]}`;
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+    privateKey = privateKey.replace(/\\n/g, '\n');
+    privateKey = privateKey.replace(/^"|"$/g, '');
+    
+    if (!privateKey.includes('\n')) {
+      const match = privateKey.match(/(-----BEGIN PRIVATE KEY-----)(.*?)(-----END PRIVATE KEY-----)/);
+      if (match) {
+        privateKey = `${match[1]}\n${match[2].replace(/\s+/g, '').match(/.{1,64}/g)?.join('\n')}\n${match[3]}`;
+      }
     }
+
+    return new google.auth.JWT({
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      key: privateKey,
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive.readonly',
+        'https://www.googleapis.com/auth/drive.file'
+      ],
+    });
   }
 
-  return new google.auth.JWT({
-    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    key: privateKey,
+  // Fallback to Application Default Credentials
+  return new google.auth.GoogleAuth({
     scopes: [
       'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/drive.readonly',
       'https://www.googleapis.com/auth/drive.file'
-    ],
+    ]
   });
 };
+
+app.get("/api/image-proxy", async (req: any, res: any) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).send("No URL provided");
+  
+  const driveRegex = /id=([a-zA-Z0-9_-]+)/;
+  const match = url.match(driveRegex);
+  
+  if (!match) {
+    return res.redirect(url);
+  }
+
+  const fileId = match[1];
+
+  try {
+    const authClient = getGoogleAuth();
+    const drive = google.drive({ version: 'v3', auth: authClient });
+
+    const response = await drive.files.get(
+      { fileId: fileId, alt: 'media' },
+      { responseType: 'stream' }
+    );
+    
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    if (response.headers && response.headers['content-type']) {
+      res.setHeader('Content-Type', response.headers['content-type']);
+    } else {
+      res.setHeader('Content-Type', 'image/jpeg'); // Fallback
+    }
+    
+    response.data.pipe(res);
+  } catch (error: any) {
+    console.error(`Failed to proxy image ${fileId}:`, error.message);
+    res.redirect(url);
+  }
+});
 
 const handleAttendance = async (req: any, res: any) => {
   try {

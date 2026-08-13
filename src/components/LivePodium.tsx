@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LeaderboardEntry, LevelCategory, ContestSettings } from '../types';
-import { isJuri3RevealedForCategory, getParticipantCategoryKey } from '../lib/contestService';
+import { isJuri3RevealedForCategory, getParticipantCategoryKey, getProxyImageUrl } from '../lib/contestService';
 import { Trophy, Medal, Lock, Unlock, ShieldAlert, Sparkles, Star, Flame, Eye, EyeOff, Layers } from 'lucide-react';
 
 interface LivePodiumProps {
@@ -116,7 +116,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
               <div className="podium-card w-full md:w-[30%] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center relative pb-6 pt-14 order-2 md:order-1 h-auto md:h-[85%] z-10 mt-12 md:mt-0">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-20 h-20 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center shadow-sm relative overflow-hidden">
-                    <img className="w-full h-full object-cover" src={rank2?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Ul03BhQkZaAwqEsCbO1UmQ_xmcXp5B8i"} referrerPolicy="no-referrer" alt="Juara 2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <img className="w-full h-full object-cover" src={getProxyImageUrl(rank2?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Ul03BhQkZaAwqEsCbO1UmQ_xmcXp5B8i")} referrerPolicy="no-referrer" alt="Juara 2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="absolute -bottom-2 w-6 h-6 bg-surface-variant border-2 border-surface-container-lowest rounded-full flex items-center justify-center">
                     <span className="text-label-sm font-bold text-on-surface-variant">2</span>
@@ -150,7 +150,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                 
                 <div className="absolute -top-14 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-28 h-28 rounded-full bg-primary-container border-4 border-surface-container-lowest flex items-center justify-center shadow-lg relative overflow-hidden">
-                    <img className="w-full h-full object-cover scale-110" src={rank1?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Nqk3jCqgImxHr2HfZb4NvWqofBO7N0AK"} referrerPolicy="no-referrer" alt="Juara 1" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <img className="w-full h-full object-cover scale-110" src={getProxyImageUrl(rank1?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Nqk3jCqgImxHr2HfZb4NvWqofBO7N0AK")} referrerPolicy="no-referrer" alt="Juara 1" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="absolute bottom-0 -right-2 w-8 h-8 bg-primary border-2 border-surface-container-lowest rounded-full flex items-center justify-center shadow-sm">
                     <span className="text-label-md font-bold text-on-primary">1</span>
@@ -181,7 +181,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
               <div className="podium-card w-full md:w-[30%] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center relative pb-6 pt-14 order-3 h-auto md:h-[80%] z-10 mt-12 md:mt-0">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-20 h-20 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center shadow-sm relative overflow-hidden">
-                    <img className="w-full h-full object-cover" src={rank3?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1HQ2l_Uy0ymzlbfNCYZojRqLmmZLUXXZM"} referrerPolicy="no-referrer" alt="Juara 3" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <img className="w-full h-full object-cover" src={getProxyImageUrl(rank3?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1HQ2l_Uy0ymzlbfNCYZojRqLmmZLUXXZM")} referrerPolicy="no-referrer" alt="Juara 3" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                   <div className="absolute -bottom-2 w-6 h-6 bg-[#CD7F32] border-2 border-surface-container-lowest rounded-full flex items-center justify-center">
                     <span className="text-label-sm font-bold text-white">3</span>

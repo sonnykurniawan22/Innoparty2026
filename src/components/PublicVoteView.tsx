@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Participant, PublicVote } from '../types';
-import { submitPublicVote } from '../lib/contestService';
+import { submitPublicVote, getProxyImageUrl } from '../lib/contestService';
 import { CheckCircle2, Heart, Award, Sparkles, RefreshCw, Send, Users, Check, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -253,7 +253,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                           isTeamSelected ? 'bg-red-600 text-white border-red-600' : 'bg-red-100 text-red-700 border-red-200'
                         }`}>
                           {p.photoUrl ? (
-                            <img src={p.photoUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
+                            <img src={getProxyImageUrl(p.photoUrl)} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover rounded-2xl" />
                           ) : (
                             p.name.charAt(0)
                           )}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Participant, LevelCategory, StreamCategory } from '../types';
-import { addParticipant, updateParticipant, deleteParticipant, seedInitialDataIfEmpty } from '../lib/contestService';
+import { addParticipant, updateParticipant, deleteParticipant, seedInitialDataIfEmpty, getProxyImageUrl } from '../lib/contestService';
 import { UserPlus, Users, Trash2, Edit3, Search, Sparkles, Check, X, Star, Flame, RefreshCw, CloudCheck } from 'lucide-react';
 
 interface MasterParticipantsProps {
@@ -340,7 +340,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
                     <td className="py-3.5 px-3">
                       <div className="flex items-center gap-3">
                         {p.photoUrl ? (
-                          <img src={p.photoUrl} alt={p.name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200" />
+                          <img src={getProxyImageUrl(p.photoUrl)} alt={p.name} referrerPolicy="no-referrer" className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200" />
                         ) : (
                           <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 border border-slate-300">
                             <Users className="w-4 h-4 text-slate-500" />
