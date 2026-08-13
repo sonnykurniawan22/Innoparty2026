@@ -130,6 +130,17 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
     return matchesCategory && matchesSearch;
   });
 
+  const handlePhotoUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value;
+    // Auto-convert Google Drive viewer links to direct image links
+    const driveRegex = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view.*/;
+    const match = val.match(driveRegex);
+    if (match && match[1]) {
+      val = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+    setPhotoUrl(val);
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
       
@@ -222,7 +233,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
               <input
                 type="url"
                 value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
+                onChange={handlePhotoUrlChange}
                 placeholder="https://example.com/photo.jpg (Opsional)"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
