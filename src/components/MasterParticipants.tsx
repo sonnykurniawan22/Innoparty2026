@@ -71,6 +71,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
       if (editingId) {
         await updateParticipant(editingId, {
           name,
+          teamCode,
           projectTitle,
           preliminaryScore: Number(preliminaryScore) || 0,
           levelCategory,
@@ -80,6 +81,7 @@ export const MasterParticipants: React.FC<MasterParticipantsProps> = ({ particip
       } else {
         await addParticipant({
           name,
+          teamCode,
           projectTitle,
           preliminaryScore: Number(preliminaryScore) || 0,
           levelCategory,
