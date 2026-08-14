@@ -43,6 +43,19 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
   const [ssJuri1, setSsJuri1] = useState(settings.ssJuri1SheetName ?? 'Juri 1');
   const [ssJuri2, setSsJuri2] = useState(settings.ssJuri2SheetName ?? 'Juri 2');
   const [ssJuri3, setSsJuri3] = useState(settings.ssJuri3SheetName ?? 'Juri 3');
+
+  // Custom Column Configuration QCC
+  const [colQccTeamCode, setColQccTeamCode] = useState(settings.colQccTeamCode || settings.colTeamCode || 'A');
+  const [colQccTeamName, setColQccTeamName] = useState(settings.colQccTeamName || settings.colTeamName || 'B');
+  const [colQccPerbaikanMateri, setColQccPerbaikanMateri] = useState(settings.colQccPerbaikanMateri || settings.colPerbaikanMateri || 'D');
+  const [colQccPerformance, setColQccPerformance] = useState(settings.colQccPerformance || settings.colPerformance || 'E');
+
+  // Custom Column Configuration SS
+  const [colSsTeamCode, setColSsTeamCode] = useState(settings.colSsTeamCode || settings.colTeamCode || 'A');
+  const [colSsTeamName, setColSsTeamName] = useState(settings.colSsTeamName || settings.colTeamName || 'B');
+  const [colSsPerbaikanMateri, setColSsPerbaikanMateri] = useState(settings.colSsPerbaikanMateri || settings.colPerbaikanMateri || 'D');
+  const [colSsPerformance, setColSsPerformance] = useState(settings.colSsPerformance || settings.colPerformance || 'E');
+
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
 
@@ -126,10 +139,18 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         qccJuri3SheetName: qccJuri3,
         ssJuri1SheetName: ssJuri1,
         ssJuri2SheetName: ssJuri2,
-        ssJuri3SheetName: ssJuri3
+        ssJuri3SheetName: ssJuri3,
+        colQccTeamCode: colQccTeamCode.trim().toUpperCase(),
+        colQccTeamName: colQccTeamName.trim().toUpperCase(),
+        colQccPerbaikanMateri: colQccPerbaikanMateri.trim().toUpperCase(),
+        colQccPerformance: colQccPerformance.trim().toUpperCase(),
+        colSsTeamCode: colSsTeamCode.trim().toUpperCase(),
+        colSsTeamName: colSsTeamName.trim().toUpperCase(),
+        colSsPerbaikanMateri: colSsPerbaikanMateri.trim().toUpperCase(),
+        colSsPerformance: colSsPerformance.trim().toUpperCase()
       });
       setIsUpdating(false);
-      setSuccessMsg('Konfigurasi Google Sheets Berhasil Disimpan!');
+      setSuccessMsg('Konfigurasi Google Sheets & Pemetaan Kolom Berhasil Disimpan!');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       console.error("Error updating sheet config:", err);
@@ -175,11 +196,15 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
     setSyncStatus('Sedang menarik data dari Google Sheets...');
     
     try {
-      const fetchSheets = async (url: string, id: string, sheets: string[], stream: string, judgeMapping: Record<string, number>) => {
+      const fetchSheets = async (url: string, id: string, sheets: string[], stream: string, judgeMapping: Record<string, number>, colConfig: Record<string, string>) => {
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ spreadsheetId: extractSpreadsheetId(id), sheetNames: sheets })
+          body: JSON.stringify({ 
+            spreadsheetId: extractSpreadsheetId(id), 
+            sheetNames: sheets,
+            columns: colConfig
+          })
         });
         const data = await res.json();
         if (data.success) {
@@ -198,7 +223,12 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         if (qccJuri3) qccMapping[qccJuri3] = 3;
         
         setSyncStatus('Menarik data QCC...');
-        await fetchSheets('/api/read-sheets', qccSpreadsheetId, qccArr, 'QCC', qccMapping);
+        await fetchSheets('/api/read-sheets', qccSpreadsheetId, qccArr, 'QCC', qccMapping, {
+          colTeamCode: colQccTeamCode.trim().toUpperCase(),
+          colTeamName: colQccTeamName.trim().toUpperCase(),
+          colPerbaikanMateri: colQccPerbaikanMateri.trim().toUpperCase(),
+          colPerformance: colQccPerformance.trim().toUpperCase()
+        });
       }
       
       if (ssSpreadsheetId) {
@@ -209,7 +239,12 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         if (ssJuri3) ssMapping[ssJuri3] = 3;
 
         setSyncStatus('Menarik data SS...');
-        await fetchSheets('/api/read-sheets', ssSpreadsheetId, ssArr, 'SS', ssMapping);
+        await fetchSheets('/api/read-sheets', ssSpreadsheetId, ssArr, 'SS', ssMapping, {
+          colTeamCode: colSsTeamCode.trim().toUpperCase(),
+          colTeamName: colSsTeamName.trim().toUpperCase(),
+          colPerbaikanMateri: colSsPerbaikanMateri.trim().toUpperCase(),
+          colPerformance: colSsPerformance.trim().toUpperCase()
+        });
       }
 
       setSyncStatus('Sinkronisasi selesai!');
@@ -366,70 +401,200 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               </div>
             </div>
 
-            {/* Juri QCC Sheets */}
-            <div className="mb-4 p-4 bg-slate-800 rounded-xl border border-slate-700">
-              <h4 className="text-xs font-bold text-emerald-400 mb-3 uppercase">Nama Sheet Juri QCC</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 1 (QCC)</label>
-                  <input 
-                    type="text" 
-                    value={qccJuri1} 
-                    onChange={(e) => setQccJuri1(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
-                  />
+            {/* Juri QCC Sheets & Kolom QCC */}
+            <div className="mb-4 p-5 bg-slate-800 rounded-2xl border border-blue-500/40 shadow-sm">
+              <div className="flex items-center justify-between mb-3 border-b border-slate-700/80 pb-2">
+                <h4 className="text-xs font-black text-blue-400 uppercase flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse inline-block"></span>
+                  KONFIGURASI STREAM QCC (SHEETS & KOLOM)
+                </h4>
+                <span className="text-[10px] bg-blue-500/10 text-blue-300 font-bold px-2 py-0.5 rounded border border-blue-500/20">STREAM QCC</span>
+              </div>
+              
+              <div className="mb-4">
+                <span className="text-[11px] font-bold text-slate-300 block mb-2">Nama Sheet Juri QCC:</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Sheet Juri 1 (QCC)</label>
+                    <input 
+                      type="text" 
+                      value={qccJuri1} 
+                      onChange={(e) => setQccJuri1(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-semibold text-slate-100 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Sheet Juri 2 (QCC)</label>
+                    <input 
+                      type="text" 
+                      value={qccJuri2} 
+                      onChange={(e) => setQccJuri2(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-semibold text-slate-100 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Sheet Juri 3 (QCC)</label>
+                    <input 
+                      type="text" 
+                      value={qccJuri3} 
+                      onChange={(e) => setQccJuri3(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-semibold text-slate-100 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 2 (QCC)</label>
-                  <input 
-                    type="text" 
-                    value={qccJuri2} 
-                    onChange={(e) => setQccJuri2(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 3 (QCC)</label>
-                  <input 
-                    type="text" 
-                    value={qccJuri3} 
-                    onChange={(e) => setQccJuri3(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
-                  />
+              </div>
+
+              {/* QCC Columns */}
+              <div className="pt-3 border-t border-slate-700/80">
+                <span className="text-[11px] font-bold text-slate-300 block mb-2">Pemetaan Kolom Spreadsheet QCC (Huruf Kolom):</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom ID / Kode</label>
+                    <input 
+                      type="text" 
+                      value={colQccTeamCode} 
+                      onChange={(e) => setColQccTeamCode(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
+                      placeholder="A"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: A</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom Nama Tim</label>
+                    <input 
+                      type="text" 
+                      value={colQccTeamName} 
+                      onChange={(e) => setColQccTeamName(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
+                      placeholder="B"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: B</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Perbaikan (4%)</label>
+                    <input 
+                      type="text" 
+                      value={colQccPerbaikanMateri} 
+                      onChange={(e) => setColQccPerbaikanMateri(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
+                      placeholder="D"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Performance (4%)</label>
+                    <input 
+                      type="text" 
+                      value={colQccPerformance} 
+                      onChange={(e) => setColQccPerformance(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
+                      placeholder="E"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: E</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Juri SS Sheets */}
-            <div className="mb-6 p-4 bg-slate-800 rounded-xl border border-slate-700">
-              <h4 className="text-xs font-bold text-emerald-400 mb-3 uppercase">Nama Sheet Juri SS</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 1 (SS)</label>
-                  <input 
-                    type="text" 
-                    value={ssJuri1} 
-                    onChange={(e) => setSsJuri1(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
-                  />
+            {/* Juri SS Sheets & Kolom SS */}
+            <div className="mb-6 p-5 bg-slate-800 rounded-2xl border border-emerald-500/40 shadow-sm">
+              <div className="flex items-center justify-between mb-3 border-b border-slate-700/80 pb-2">
+                <h4 className="text-xs font-black text-emerald-400 uppercase flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+                  KONFIGURASI STREAM SS (SHEETS & KOLOM)
+                </h4>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-500/20">STREAM SS</span>
+              </div>
+
+              <div className="mb-4">
+                <span className="text-[11px] font-bold text-slate-300 block mb-2">Nama Sheet Juri SS:</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Sheet Juri 1 (SS)</label>
+                    <input 
+                      type="text" 
+                      value={ssJuri1} 
+                      onChange={(e) => setSsJuri1(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-semibold text-slate-100 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Sheet Juri 2 (SS)</label>
+                    <input 
+                      type="text" 
+                      value={ssJuri2} 
+                      onChange={(e) => setSsJuri2(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-semibold text-slate-100 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1">Sheet Juri 3 (SS)</label>
+                    <input 
+                      type="text" 
+                      value={ssJuri3} 
+                      onChange={(e) => setSsJuri3(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm font-semibold text-slate-100 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 2 (SS)</label>
-                  <input 
-                    type="text" 
-                    value={ssJuri2} 
-                    onChange={(e) => setSsJuri2(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Juri 3 (SS)</label>
-                  <input 
-                    type="text" 
-                    value={ssJuri3} 
-                    onChange={(e) => setSsJuri3(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-emerald-500"
-                  />
+              </div>
+
+              {/* SS Columns */}
+              <div className="pt-3 border-t border-slate-700/80">
+                <span className="text-[11px] font-bold text-slate-300 block mb-2">Pemetaan Kolom Spreadsheet SS (Huruf Kolom):</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom ID / Kode</label>
+                    <input 
+                      type="text" 
+                      value={colSsTeamCode} 
+                      onChange={(e) => setColSsTeamCode(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
+                      placeholder="A"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: A</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom Nama Tim</label>
+                    <input 
+                      type="text" 
+                      value={colSsTeamName} 
+                      onChange={(e) => setColSsTeamName(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
+                      placeholder="B"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: B</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Perbaikan (4%)</label>
+                    <input 
+                      type="text" 
+                      value={colSsPerbaikanMateri} 
+                      onChange={(e) => setColSsPerbaikanMateri(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
+                      placeholder="D"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Performance (4%)</label>
+                    <input 
+                      type="text" 
+                      value={colSsPerformance} 
+                      onChange={(e) => setColSsPerformance(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
+                      placeholder="E"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: E</span>
+                  </div>
                 </div>
               </div>
             </div>

@@ -80,10 +80,32 @@ app.get("/api/image-proxy", async (req: any, res: any) => {
 
 app.post("/api/read-sheets", async (req: any, res: any) => {
   try {
-    const { spreadsheetId, sheetNames } = req.body;
+    const { spreadsheetId, sheetNames, columns } = req.body;
     if (!spreadsheetId || !sheetNames || !Array.isArray(sheetNames)) {
       return res.status(400).json({ error: "Missing spreadsheetId or sheetNames array" });
     }
+
+    // Helper to convert Column Letter (e.g. 'A', 'B', 'Z', 'AA') to 0-based index
+    const colToIndex = (col: string | undefined, defaultIdx: number): number => {
+      if (!col || typeof col !== 'string') return defaultIdx;
+      const clean = col.trim().toUpperCase();
+      if (!clean) return defaultIdx;
+      let result = 0;
+      for (let i = 0; i < clean.length; i++) {
+        const code = clean.charCodeAt(i);
+        if (code >= 65 && code <= 90) {
+          result = result * 26 + (code - 64);
+        } else {
+          return defaultIdx; // Non-alphabetic fallback
+        }
+      }
+      return Math.max(0, result - 1);
+    };
+
+    const teamCodeIdx = colToIndex(columns?.colTeamCode, 0);       // Default 'A' = 0
+    const teamNameIdx = colToIndex(columns?.colTeamName, 1);       // Default 'B' = 1
+    const perbaikanIdx = colToIndex(columns?.colPerbaikanMateri, 3); // Default 'D' = 3
+    const performanceIdx = colToIndex(columns?.colPerformance, 4);   // Default 'E' = 4
 
     const authClient = getGoogleAuth();
     const sheets = google.sheets({ version: 'v4', auth: authClient });
@@ -94,34 +116,33 @@ app.post("/api/read-sheets", async (req: any, res: any) => {
       try {
         const getRes = await sheets.spreadsheets.values.get({
           spreadsheetId,
-          range: `'${sheetName}'!A:E`,
+          range: `'${sheetName}'!A:Z`,
         });
         
         const rows = getRes.data.values || [];
         const parsedRows = rows.map(row => {
-          // A = row[0] (Kode Tim)
-          // B = row[1] (Nama Team)
-          // D = row[3] (Perbaikan Materi)
-          // E = row[4] (Performance)
-          
           let perbaikanMateri = 0;
           let performance = 0;
           
-          if (row[3]) {
-            const val = row[3].toString().replace(',', '.');
+          if (row[perbaikanIdx]) {
+            const val = row[perbaikanIdx].toString().replace(',', '.');
             perbaikanMateri = parseFloat(val) || 0;
           }
-          if (row[4]) {
-            const val = row[4].toString().replace(',', '.');
+          if (row[performanceIdx]) {
+            const val = row[performanceIdx].toString().replace(',', '.');
             performance = parseFloat(val) || 0;
           }
+
+          const rawTeamCode = row[teamCodeIdx] ? row[teamCodeIdx].toString().trim() : "";
+          const rawTeamName = row[teamNameIdx] ? row[teamNameIdx].toString().trim() : "";
+
           return {
-            teamCode: row[0] ? row[0].toString().trim() : "",
-            teamName: row[1] ? row[1].toString().trim() : "",
+            teamCode: rawTeamCode,
+            teamName: rawTeamName,
             perbaikanMateri,
             performance
           };
-        }).filter(r => r.teamCode && r.teamCode.toLowerCase() !== 'kategori' && r.teamCode.toLowerCase() !== 'kode tim' && r.teamCode.toLowerCase() !== 'id'); 
+        }).filter(r => r.teamCode && r.teamCode.toLowerCase() !== 'kategori' && r.teamCode.toLowerCase() !== 'kode tim' && r.teamCode.toLowerCase() !== 'id' && r.teamCode.toLowerCase() !== 'no'); 
         results[sheetName] = parsedRows;
       } catch (err: any) {
         console.error(`Error reading sheet ${sheetName}:`, err.message);

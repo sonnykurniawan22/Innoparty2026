@@ -216,18 +216,13 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
         {rankedData.length > 3 && (
           <div className="border-t border-outline-variant/30">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[1000px]">
+              <table className="w-full text-left border-collapse">
                 <thead className="bg-surface-container text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border-b border-outline-variant">
                   <tr>
-                    <th className="py-3 px-4 w-12 text-center">POS</th>
-                    <th className="py-3 px-4">NAMA TIM / PESERTA</th>
-                    <th className="py-3 px-4 text-center">PENYISIHAN (90%)</th>
-                    <th className="py-3 px-3 text-center">JURI 1</th>
-                    <th className="py-3 px-3 text-center">JURI 2</th>
-                    <th className="py-3 px-3 text-center">JURI 3</th>
-                    <th className="py-3 px-4 text-center">PUBLIC VOTE (2%)</th>
-                    <th className="py-3 px-6 text-center bg-primary-container/20 text-primary font-black">NILAI AKHIR</th>
-                    <th className="py-3 px-4 text-center">STATUS</th>
+                    <th className="py-3.5 px-4 w-16 text-center">POS</th>
+                    <th className="py-3.5 px-6">NAMA TIM / PESERTA</th>
+                    <th className="py-3.5 px-4 text-center w-32">KATEGORI</th>
+                    <th className="py-3.5 px-6 text-center w-40 bg-primary-container/20 text-primary font-black">TOTAL SKOR</th>
                   </tr>
                 </thead>
                 <tbody className="text-body-sm text-on-surface divide-y divide-outline-variant">
@@ -238,48 +233,25 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                         className="hover:bg-surface-container-low transition-colors group"
                       >
                         <td className="py-4 px-4 text-center">
-                          <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant mx-auto">
+                          <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant mx-auto font-mono">
                             {item.rank}
                           </div>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-4 px-6">
                           <div className="font-bold text-on-surface text-body-md">{item.participant.name}</div>
                           <div className="text-xs text-on-surface-variant line-clamp-1">"{item.participant.projectTitle}"</div>
                         </td>
-                        <td className="py-4 px-4 text-center font-bold text-indigo-700 bg-indigo-50/40 font-mono">
-                          {item.participant.preliminaryScore !== undefined ? item.participant.preliminaryScore.toFixed(2) : '-'}
-                        </td>
-                        <td className="py-4 px-3 text-center">
-                          {item.hasJuri1 ? (
-                            <span className="text-on-surface-variant font-mono">{item.juri1Score}</span>
-                          ) : (
-                            <span className="text-on-surface-variant">-</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-3 text-center">
-                          {item.hasJuri2 ? (
-                            <span className="text-on-surface-variant font-mono">{item.juri2Score}</span>
-                          ) : (
-                            <span className="text-on-surface-variant">-</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-3 text-center">
-                          {item.hasJuri3 ? (
-                            <span className="text-on-surface-variant font-mono">{item.juri3Score}</span>
-                          ) : (
-                            <span className="text-on-surface-variant">-</span>
-                          )}
-                        </td>
-                        <td className="py-4 px-4 text-center font-bold text-emerald-700 font-mono">
-                          {item.publicVoteCount} Suara
-                        </td>
-                        <td className="py-4 px-6 text-center bg-surface-bright font-black text-body-md text-red-600 font-mono">
-                          {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
-                        </td>
                         <td className="py-4 px-4 text-center">
-                          <span className="text-xs font-medium text-secondary">
-                            Peserta Final
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border ${
+                            item.participant.levelCategory === 'Leading'
+                              ? 'bg-purple-50 text-purple-700 border-purple-200'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}>
+                            {item.participant.levelCategory || item.participant.category || item.participant.stream}
                           </span>
+                        </td>
+                        <td className="py-4 px-6 text-center bg-surface-bright font-black text-body-lg text-red-600 font-mono">
+                          {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
                         </td>
                       </tr>
                     );
@@ -313,7 +285,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                           ? 'bg-[#F3E8FF] text-[#6B21A8]'
                           : 'bg-emerald-50 text-emerald-700'
                       }`}>
-                        {item.participant.levelCategory}
+                        {item.participant.levelCategory || item.participant.category}
                       </span>
                     </div>
 
@@ -321,24 +293,9 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                       "{item.participant.projectTitle}"
                     </p>
 
-                    <div className="grid grid-cols-3 gap-2 text-center pt-1">
-                      <div className="bg-surface p-2 rounded-lg border border-outline-variant">
-                        <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 1</span>
-                        <span className="text-body-sm font-bold text-on-surface">{item.hasJuri1 ? item.juri1Score : '-'}</span>
-                      </div>
-                      <div className="bg-surface p-2 rounded-lg border border-outline-variant">
-                        <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 2</span>
-                        <span className="text-body-sm font-bold text-on-surface">{item.hasJuri2 ? item.juri2Score : '-'}</span>
-                      </div>
-                      <div className="bg-surface p-2 rounded-lg border border-outline-variant">
-                        <span className="text-[9px] uppercase font-bold text-on-surface-variant block">JURI 3</span>
-                        <span className="text-body-sm font-bold text-on-surface">{item.hasJuri3 ? item.juri3Score : '-'}</span>
-                      </div>
-                    </div>
-
                     <div className="flex items-center justify-between pt-2 border-t border-outline-variant/50">
                       <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total Skor</span>
-                      <span className="text-headline-md font-bold text-primary font-mono">
+                      <span className="text-headline-md font-bold text-red-600 font-mono">
                         {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
                       </span>
                     </div>

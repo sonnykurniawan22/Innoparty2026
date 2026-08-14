@@ -75,6 +75,24 @@ export interface ContestSettings {
   ssJuri1SheetName?: string;
   ssJuri2SheetName?: string;
   ssJuri3SheetName?: string;
+
+  // Custom Column Mapping (Contoh: "A", "B", "D", "E")
+  colTeamCode?: string;         // default: "A"
+  colTeamName?: string;         // default: "B"
+  colPerbaikanMateri?: string;  // default: "D"
+  colPerformance?: string;      // default: "E"
+
+  // Custom Column Mapping QCC
+  colQccTeamCode?: string;         // default: "A"
+  colQccTeamName?: string;         // default: "B"
+  colQccPerbaikanMateri?: string;  // default: "D"
+  colQccPerformance?: string;      // default: "E"
+
+  // Custom Column Mapping SS
+  colSsTeamCode?: string;         // default: "A"
+  colSsTeamName?: string;         // default: "B"
+  colSsPerbaikanMateri?: string;  // default: "D"
+  colSsPerformance?: string;      // default: "E"
 }
 
 export interface LeaderboardEntry {
