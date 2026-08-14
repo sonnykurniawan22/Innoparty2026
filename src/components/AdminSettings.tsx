@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ContestSettings, Participant, JudgeScore, PublicVote } from '../types';
-import { updateContestSettings, computeLeaderboard, getParticipantCategoryKey, clearAllScores, clearAllPublicVotes, saveJudgeScore, deleteJudgeScore, updateParticipant } from '../lib/contestService';
+import { updateContestSettings, computeLeaderboard, getParticipantCategoryKey, clearAllScores, clearAllPublicVotes, saveJudgeScore, deleteJudgeScore, updateParticipant, addParticipant } from '../lib/contestService';
 import { 
   Settings, 
   Sparkles, 
@@ -47,12 +47,14 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
   // Custom Column Configuration QCC
   const [colQccTeamCode, setColQccTeamCode] = useState(settings.colQccTeamCode || settings.colTeamCode || 'B');
   const [colQccTeamName, setColQccTeamName] = useState(settings.colQccTeamName || settings.colTeamName || 'C');
+  const [colQccPreliminary, setColQccPreliminary] = useState(settings.colQccPreliminary || 'D');
   const [colQccPerbaikanMateri, setColQccPerbaikanMateri] = useState(settings.colQccPerbaikanMateri || settings.colPerbaikanMateri || 'E');
   const [colQccPerformance, setColQccPerformance] = useState(settings.colQccPerformance || settings.colPerformance || 'F');
 
   // Custom Column Configuration SS
   const [colSsTeamCode, setColSsTeamCode] = useState(settings.colSsTeamCode || settings.colTeamCode || 'B');
   const [colSsTeamName, setColSsTeamName] = useState(settings.colSsTeamName || settings.colTeamName || 'C');
+  const [colSsPreliminary, setColSsPreliminary] = useState(settings.colSsPreliminary || 'D');
   const [colSsPerbaikanMateri, setColSsPerbaikanMateri] = useState(settings.colSsPerbaikanMateri || settings.colPerbaikanMateri || 'E');
   const [colSsPerformance, setColSsPerformance] = useState(settings.colSsPerformance || settings.colPerformance || 'F');
 
@@ -123,13 +125,15 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
 
       if (settings.colQccTeamCode || settings.colTeamCode) setColQccTeamCode(settings.colQccTeamCode || settings.colTeamCode || 'A');
       if (settings.colQccTeamName || settings.colTeamName) setColQccTeamName(settings.colQccTeamName || settings.colTeamName || 'B');
-      if (settings.colQccPerbaikanMateri || settings.colPerbaikanMateri) setColQccPerbaikanMateri(settings.colQccPerbaikanMateri || settings.colPerbaikanMateri || 'D');
-      if (settings.colQccPerformance || settings.colPerformance) setColQccPerformance(settings.colQccPerformance || settings.colPerformance || 'E');
+      if (settings.colQccPreliminary) setColQccPreliminary(settings.colQccPreliminary || 'D');
+      if (settings.colQccPerbaikanMateri || settings.colPerbaikanMateri) setColQccPerbaikanMateri(settings.colQccPerbaikanMateri || settings.colPerbaikanMateri || 'E');
+      if (settings.colQccPerformance || settings.colPerformance) setColQccPerformance(settings.colQccPerformance || settings.colPerformance || 'F');
 
       if (settings.colSsTeamCode || settings.colTeamCode) setColSsTeamCode(settings.colSsTeamCode || settings.colTeamCode || 'A');
       if (settings.colSsTeamName || settings.colTeamName) setColSsTeamName(settings.colSsTeamName || settings.colTeamName || 'B');
-      if (settings.colSsPerbaikanMateri || settings.colPerbaikanMateri) setColSsPerbaikanMateri(settings.colSsPerbaikanMateri || settings.colPerbaikanMateri || 'D');
-      if (settings.colSsPerformance || settings.colPerformance) setColSsPerformance(settings.colSsPerformance || settings.colPerformance || 'E');
+      if (settings.colSsPreliminary) setColSsPreliminary(settings.colSsPreliminary || 'D');
+      if (settings.colSsPerbaikanMateri || settings.colPerbaikanMateri) setColSsPerbaikanMateri(settings.colSsPerbaikanMateri || settings.colPerbaikanMateri || 'E');
+      if (settings.colSsPerformance || settings.colPerformance) setColSsPerformance(settings.colSsPerformance || settings.colPerformance || 'F');
     }
   }, [settings]);
 
@@ -167,10 +171,12 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         ssJuri3SheetName: ssJuri3,
         colQccTeamCode: colQccTeamCode.trim().toUpperCase(),
         colQccTeamName: colQccTeamName.trim().toUpperCase(),
+        colQccPreliminary: colQccPreliminary.trim().toUpperCase(),
         colQccPerbaikanMateri: colQccPerbaikanMateri.trim().toUpperCase(),
         colQccPerformance: colQccPerformance.trim().toUpperCase(),
         colSsTeamCode: colSsTeamCode.trim().toUpperCase(),
         colSsTeamName: colSsTeamName.trim().toUpperCase(),
+        colSsPreliminary: colSsPreliminary.trim().toUpperCase(),
         colSsPerbaikanMateri: colSsPerbaikanMateri.trim().toUpperCase(),
         colSsPerformance: colSsPerformance.trim().toUpperCase()
       });
@@ -186,10 +192,14 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
     }
   };
 
+  const [syncReport, setSyncReport] = useState<{ matched: string[]; unmatched: string[] } | null>(null);
+
   const importSheetsToFirestore = async (sheetData: Record<string, any[]>, stream: string, judgeMapping: Record<string, number>) => {
-    const batchPromises = [];
+    const batchPromises: Promise<any>[] = [];
     let syncedScores = 0;
     let updatedPrelims = 0;
+    const matchedNames: string[] = [];
+    const unmatchedRows: string[] = [];
     
     for (const [sheetName, rows] of Object.entries(sheetData)) {
       let judgeId = judgeMapping[sheetName];
@@ -211,30 +221,26 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         const rowCodeNorm = normalize(row.teamCode);
         const rowNameNorm = normalize(row.teamName);
 
-        // 1. Try finding participant within matching stream
-        let p = participants.find(part => {
-          if (part.stream !== stream) return false;
-          if (part.teamCode && rowCodeNorm && normalize(part.teamCode) === rowCodeNorm) return true;
-          if (part.name && rowNameNorm && normalize(part.name) === rowNameNorm) return true;
+        if (!rowCodeNorm && !rowNameNorm) continue;
+
+        // Find participant within existing list with versatile matching
+        const p = participants.find(part => {
+          const partCodeNorm = normalize(part.teamCode || '');
+          const partNameNorm = normalize(part.name || '');
+
+          // 1. Exact code match (e.g. 'r001' === 'r001')
+          if (partCodeNorm && rowCodeNorm && partCodeNorm === rowCodeNorm) return true;
+          // 2. Exact name match (e.g. 'saleslens' === 'saleslens')
+          if (partNameNorm && rowNameNorm && partNameNorm === rowNameNorm) return true;
+          // 3. Substring match for name if >= 4 chars (e.g. 'conan' in 'conanscrappingberita')
+          if (partNameNorm.length >= 4 && rowNameNorm.length >= 4) {
+            if (partNameNorm.includes(rowNameNorm) || rowNameNorm.includes(partNameNorm)) return true;
+          }
           return false;
         });
-
-        // 2. Fallback: match across all participants regardless of stream
-        if (!p) {
-          p = participants.find(part => {
-            if (part.teamCode && rowCodeNorm && normalize(part.teamCode) === rowCodeNorm) return true;
-            if (part.name && rowNameNorm && normalize(part.name) === rowNameNorm) return true;
-            if (part.name && rowNameNorm) {
-              const pNorm = normalize(part.name);
-              if (pNorm.length > 3 && rowNameNorm.length > 3 && (pNorm.includes(rowNameNorm) || rowNameNorm.includes(pNorm))) {
-                return true;
-              }
-            }
-            return false;
-          });
-        }
         
         if (p) {
+          matchedNames.push(`${p.name} (${p.teamCode || row.teamCode || '-'})`);
           const perf = Number(row.performance) || 0;
           const mat = Number(row.perbaikanMateri) || 0;
 
@@ -248,30 +254,41 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               sheetName
             ));
           } else {
-            // Jika nilai perbaikan materi & performance di Google Sheets kosong / 0,
-            // hapus skor juri agar statusnya kembali belum dinilai (null)
+            // Hapus nilai juri di slot ini jika di spreadsheet bernilai 0 / kosong
             batchPromises.push(deleteJudgeScore(p.id, judgeId as 1 | 2 | 3));
           }
 
-          if (typeof row.preliminaryScore === 'number' && row.preliminaryScore > 0 && row.preliminaryScore !== p.preliminaryScore) {
+          const updates: Partial<Participant> = {};
+          if (typeof row.preliminaryScore === 'number' && row.preliminaryScore >= 0 && row.preliminaryScore !== p.preliminaryScore) {
             updatedPrelims++;
-            batchPromises.push(updateParticipant(p.id, { preliminaryScore: row.preliminaryScore }));
+            updates.preliminaryScore = row.preliminaryScore;
           }
+          if (row.teamCode && (!p.teamCode || normalize(p.teamCode) !== rowCodeNorm)) {
+            updates.teamCode = row.teamCode;
+          }
+          if (Object.keys(updates).length > 0) {
+            batchPromises.push(updateParticipant(p.id, updates));
+          }
+        } else {
+          unmatchedRows.push(`${row.teamCode ? `[${row.teamCode}] ` : ''}${row.teamName || 'Tanpa Nama'}`);
         }
       }
     }
     
-    await Promise.all(batchPromises);
-    return { syncedScores, updatedPrelims };
+    await Promise.allSettled(batchPromises);
+    return { syncedScores, updatedPrelims, matchedNames, unmatchedRows };
   };
 
   const handleSyncScores = async () => {
     setIsSyncing(true);
     setSyncStatus('Sedang menarik data dari Google Sheets...');
+    setSyncReport(null);
     
     try {
       let totalSyncedScores = 0;
       let totalUpdatedPrelims = 0;
+      const allMatched: string[] = [];
+      const allUnmatched: string[] = [];
 
       const fetchSheets = async (url: string, id: string, sheets: string[], stream: string, judgeMapping: Record<string, number>, colConfig: Record<string, string>) => {
         const res = await fetch(url, {
@@ -285,10 +302,12 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         });
         const data = await res.json();
         if (data.success) {
-          setSyncStatus(`Menyimpan data ${stream} ke database...`);
+          setSyncStatus(`Menyimpan data ${stream} ke database Firestore...`);
           const result = await importSheetsToFirestore(data.data, stream, judgeMapping);
           totalSyncedScores += result.syncedScores;
           totalUpdatedPrelims += result.updatedPrelims;
+          result.matchedNames.forEach(m => { if (!allMatched.includes(m)) allMatched.push(m); });
+          result.unmatchedRows.forEach(u => { if (!allUnmatched.includes(u)) allUnmatched.push(u); });
         } else {
           throw new Error(data.error || 'Failed to fetch');
         }
@@ -305,6 +324,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         await fetchSheets('/api/read-sheets', qccSpreadsheetId, qccArr, 'QCC', qccMapping, {
           colTeamCode: colQccTeamCode.trim().toUpperCase(),
           colTeamName: colQccTeamName.trim().toUpperCase(),
+          colPreliminaryScore: colQccPreliminary.trim().toUpperCase(),
           colPerbaikanMateri: colQccPerbaikanMateri.trim().toUpperCase(),
           colPerformance: colQccPerformance.trim().toUpperCase()
         });
@@ -321,13 +341,15 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         await fetchSheets('/api/read-sheets', ssSpreadsheetId, ssArr, 'SS', ssMapping, {
           colTeamCode: colSsTeamCode.trim().toUpperCase(),
           colTeamName: colSsTeamName.trim().toUpperCase(),
+          colPreliminaryScore: colSsPreliminary.trim().toUpperCase(),
           colPerbaikanMateri: colSsPerbaikanMateri.trim().toUpperCase(),
           colPerformance: colSsPerformance.trim().toUpperCase()
         });
       }
 
-      setSyncStatus(`Sinkronisasi selesai! (Tersimpan: ${totalSyncedScores} data nilai juri, ${totalUpdatedPrelims} nilai penyisihan)`);
-      setTimeout(() => setSyncStatus(''), 4000);
+      setSyncReport({ matched: allMatched, unmatched: allUnmatched });
+      setSyncStatus(`Sinkronisasi selesai! (${totalSyncedScores} nilai juri tersimpan, ${totalUpdatedPrelims} nilai penyisihan terupdate)`);
+      setTimeout(() => setSyncStatus(''), 8000);
     } catch (err: any) {
       console.error(err);
       setSyncStatus(`Gagal: ${err.message}`);
@@ -526,7 +548,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               {/* QCC Columns */}
               <div className="pt-3 border-t border-slate-700/80">
                 <span className="text-[11px] font-bold text-slate-300 block mb-2">Pemetaan Kolom Spreadsheet QCC (Huruf Kolom):</span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom ID / Kode</label>
                     <input 
@@ -534,10 +556,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colQccTeamCode} 
                       onChange={(e) => setColQccTeamCode(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
-                      placeholder="A"
+                      placeholder="B"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: A</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: B</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom Nama Tim</label>
@@ -546,10 +568,22 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colQccTeamName} 
                       onChange={(e) => setColQccTeamName(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
-                      placeholder="B"
+                      placeholder="C"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: B</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: C</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Penyisihan (90%)</label>
+                    <input 
+                      type="text" 
+                      value={colQccPreliminary} 
+                      onChange={(e) => setColQccPreliminary(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
+                      placeholder="D"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Perbaikan (4%)</label>
@@ -558,10 +592,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colQccPerbaikanMateri} 
                       onChange={(e) => setColQccPerbaikanMateri(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
-                      placeholder="D"
+                      placeholder="E"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: E</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Performance (4%)</label>
@@ -570,10 +604,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colQccPerformance} 
                       onChange={(e) => setColQccPerformance(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
-                      placeholder="E"
+                      placeholder="F"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: E</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: F</span>
                   </div>
                 </div>
               </div>
@@ -625,7 +659,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               {/* SS Columns */}
               <div className="pt-3 border-t border-slate-700/80">
                 <span className="text-[11px] font-bold text-slate-300 block mb-2">Pemetaan Kolom Spreadsheet SS (Huruf Kolom):</span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom ID / Kode</label>
                     <input 
@@ -633,10 +667,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colSsTeamCode} 
                       onChange={(e) => setColSsTeamCode(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
-                      placeholder="A"
+                      placeholder="B"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: A</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: B</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom Nama Tim</label>
@@ -645,10 +679,22 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colSsTeamName} 
                       onChange={(e) => setColSsTeamName(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
-                      placeholder="B"
+                      placeholder="C"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: B</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: C</span>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Penyisihan (90%)</label>
+                    <input 
+                      type="text" 
+                      value={colSsPreliminary} 
+                      onChange={(e) => setColSsPreliminary(e.target.value.toUpperCase())}
+                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
+                      placeholder="D"
+                      maxLength={3}
+                    />
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Perbaikan (4%)</label>
@@ -657,10 +703,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colSsPerbaikanMateri} 
                       onChange={(e) => setColSsPerbaikanMateri(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
-                      placeholder="D"
+                      placeholder="E"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: E</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Performance (4%)</label>
@@ -669,10 +715,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       value={colSsPerformance} 
                       onChange={(e) => setColSsPerformance(e.target.value.toUpperCase())}
                       className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
-                      placeholder="E"
+                      placeholder="F"
                       maxLength={3}
                     />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: E</span>
+                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: F</span>
                   </div>
                 </div>
               </div>
@@ -709,6 +755,51 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               <div className="mt-4 p-3 bg-slate-800 border border-emerald-500/30 rounded-xl flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-bold text-emerald-400">{syncStatus}</span>
+              </div>
+            )}
+
+            {syncReport && (
+              <div className="mt-3 p-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs space-y-2">
+                <div className="font-bold text-slate-200 flex items-center justify-between">
+                  <span>Hasil Sinkronisasi:</span>
+                  <button 
+                    onClick={() => setSyncReport(null)}
+                    className="text-[10px] text-slate-400 hover:text-white underline"
+                  >
+                    Tutup
+                  </button>
+                </div>
+                {syncReport.matched.length > 0 && (
+                  <div>
+                    <span className="text-emerald-400 font-semibold block mb-1">
+                      ✓ {syncReport.matched.length} Tim Berhasil Terhubung & Diperbarui:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                      {syncReport.matched.map((name, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 rounded text-[11px] font-mono">
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {syncReport.unmatched.length > 0 && (
+                  <div className="pt-2 border-t border-slate-800">
+                    <span className="text-amber-400 font-semibold block mb-1">
+                      ⚠️ {syncReport.unmatched.length} Baris di Spreadsheet Tidak Ditemukan di Master Data:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                      {syncReport.unmatched.map((u, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-amber-950/80 text-amber-300 border border-amber-800/60 rounded text-[11px] font-mono">
+                          {u}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Tips: Pastikan nama tim atau kode tim di tab "Data Peserta (Master Data)" sama dengan yang ada di spreadsheet.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1120,10 +1211,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                           {pScores.length > 0 && (
                             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-950 flex flex-wrap items-center justify-between gap-2 font-medium">
                               <div>
-                                Rata-rata Performance: <span className="font-bold font-mono">{item.avgPerformance}</span> (4% = {item.performanceContrib} pts)
+                                Rata-rata Performance: <span className="font-bold font-mono">{item.avgPerformance ?? '-'}</span> (4% = {item.performanceContrib} pts)
                               </div>
                               <div>
-                                Rata-rata Perbaikan Materi: <span className="font-bold font-mono">{item.avgPerbaikanMateri}</span> (4% = {item.perbaikanMateriContrib} pts)
+                                Rata-rata Perbaikan Materi: <span className="font-bold font-mono">{item.avgPerbaikanMateri ?? '-'}</span> (4% = {item.perbaikanMateriContrib} pts)
                               </div>
                             </div>
                           )}

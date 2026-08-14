@@ -317,22 +317,33 @@ export function computeLeaderboard(
     // 2. Judge Scores (Performance 4% & Perbaikan Materi 4%)
     const pScores = scores.filter((s) => s.participantId === participant.id);
 
+    const isScoreValid = (s?: JudgeScore | null) => {
+      if (!s) return false;
+      const perf = s.criteriaScores?.performance || 0;
+      const mat = s.criteriaScores?.perbaikanMateri || 0;
+      return perf > 0 || mat > 0;
+    };
+
     const j1 = pScores.find((s) => Number(s.judgeId) === 1);
     const j2 = pScores.find((s) => Number(s.judgeId) === 2);
     const j3 = pScores.find((s) => Number(s.judgeId) === 3);
 
-    const juri1Score = j1 ? calculateSingleJudgeTotal(j1.criteriaScores) : null;
-    const juri2Score = j2 ? calculateSingleJudgeTotal(j2.criteriaScores) : null;
-    const juri3Score = j3 ? calculateSingleJudgeTotal(j3.criteriaScores) : null;
+    const j1Valid = isScoreValid(j1) ? j1 : null;
+    const j2Valid = isScoreValid(j2) ? j2 : null;
+    const j3Valid = isScoreValid(j3) ? j3 : null;
+
+    const juri1Score = j1Valid ? calculateSingleJudgeTotal(j1Valid.criteriaScores) : null;
+    const juri2Score = j2Valid ? calculateSingleJudgeTotal(j2Valid.criteriaScores) : null;
+    const juri3Score = j3Valid ? calculateSingleJudgeTotal(j3Valid.criteriaScores) : null;
 
     const activeJudges: JudgeScore[] = [];
-    if (j1) activeJudges.push(j1);
-    if (j2) activeJudges.push(j2);
-    if (j3) activeJudges.push(j3);
+    if (j1Valid) activeJudges.push(j1Valid);
+    if (j2Valid) activeJudges.push(j2Valid);
+    if (j3Valid) activeJudges.push(j3Valid);
 
-    // Fallback if slot matching didn't catch pScores items
+    // Fallback if slot matching didn't catch pScores items, filter valid ones only
     if (activeJudges.length === 0 && pScores.length > 0) {
-      activeJudges.push(...pScores);
+      activeJudges.push(...pScores.filter(isScoreValid));
     }
 
     let avgPerformance: number | null = null;

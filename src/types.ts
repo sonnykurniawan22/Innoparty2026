@@ -85,14 +85,16 @@ export interface ContestSettings {
   // Custom Column Mapping QCC
   colQccTeamCode?: string;         // default: "A"
   colQccTeamName?: string;         // default: "B"
-  colQccPerbaikanMateri?: string;  // default: "D"
-  colQccPerformance?: string;      // default: "E"
+  colQccPreliminary?: string;      // default: "D"
+  colQccPerbaikanMateri?: string;  // default: "E"
+  colQccPerformance?: string;      // default: "F"
 
   // Custom Column Mapping SS
   colSsTeamCode?: string;         // default: "A"
   colSsTeamName?: string;         // default: "B"
-  colSsPerbaikanMateri?: string;  // default: "D"
-  colSsPerformance?: string;      // default: "E"
+  colSsPreliminary?: string;      // default: "D"
+  colSsPerbaikanMateri?: string;  // default: "E"
+  colSsPerformance?: string;      // default: "F"
 }
 
 export interface LeaderboardEntry {

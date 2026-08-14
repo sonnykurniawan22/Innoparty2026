@@ -153,13 +153,14 @@ app.post("/api/read-sheets", async (req: any, res: any) => {
           continue;
         }
 
-        // Auto-detect header row & column indices in first 10 rows
+        // Auto-detect header row & column indices in first 10 rows (scan all rows without breaking early)
         let autoCodeIdx: number | null = null;
         let autoNameIdx: number | null = null;
         let autoPrelimIdx: number | null = null;
         let autoPerbaikanIdx: number | null = null;
         let autoPerfIdx: number | null = null;
-        let headerRowIndex = -1;
+        let autoCategoryIdx: number | null = null;
+        let maxHeaderRowIndex = -1;
 
         for (let r = 0; r < Math.min(10, rows.length); r++) {
           const row = rows[r];
@@ -168,28 +169,31 @@ app.post("/api/read-sheets", async (req: any, res: any) => {
           row.forEach((cell, idx) => {
             if (!cell) return;
             const str = cell.toString().toLowerCase().trim();
-            if (autoCodeIdx === null && (str === 'kode tim' || str === 'kode' || str === 'team code' || str === 'kode_tim')) {
+            if (autoCategoryIdx === null && (str === 'kategori' || str === 'category' || str === 'stream' || str === 'level')) {
+              autoCategoryIdx = idx;
+              if (r > maxHeaderRowIndex) maxHeaderRowIndex = r;
+            }
+            if (autoCodeIdx === null && (str === 'kode tim' || str === 'kode' || str === 'team code' || str === 'kode_tim' || str === 'id tim')) {
               autoCodeIdx = idx;
-              headerRowIndex = r;
+              if (r > maxHeaderRowIndex) maxHeaderRowIndex = r;
             }
-            if (autoNameIdx === null && (str === 'teams' || str === 'team' || str === 'nama tim' || str === 'nama team' || str === 'peserta')) {
+            if (autoNameIdx === null && (str === 'teams' || str === 'team' || str === 'nama tim' || str === 'nama team' || str === 'peserta' || str === 'nama peserta')) {
               autoNameIdx = idx;
-              headerRowIndex = r;
+              if (r > maxHeaderRowIndex) maxHeaderRowIndex = r;
             }
-            if (autoPrelimIdx === null && (str.includes('penyisihan') || str.includes('preliminary'))) {
+            if (autoPrelimIdx === null && (str.includes('penyisihan') || str.includes('preliminary') || str.includes('prelim'))) {
               autoPrelimIdx = idx;
-              headerRowIndex = r;
+              if (r > maxHeaderRowIndex) maxHeaderRowIndex = r;
             }
             if (autoPerbaikanIdx === null && (str.includes('perbaikan') || str.includes('materi'))) {
               autoPerbaikanIdx = idx;
-              headerRowIndex = r;
+              if (r > maxHeaderRowIndex) maxHeaderRowIndex = r;
             }
-            if (autoPerfIdx === null && (str.includes('performance') || str.includes('performa'))) {
+            if (autoPerfIdx === null && (str.includes('performance') || str.includes('performa') || str.includes('penampilan'))) {
               autoPerfIdx = idx;
-              headerRowIndex = r;
+              if (r > maxHeaderRowIndex) maxHeaderRowIndex = r;
             }
           });
-          if (autoCodeIdx !== null || autoNameIdx !== null) break;
         }
 
         // Final column indices: manual override -> detected header -> default
@@ -200,7 +204,8 @@ app.post("/api/read-sheets", async (req: any, res: any) => {
         const perbaikanIdx = columns?.colPerbaikanMateri ? colToIndex(columns.colPerbaikanMateri, 4) : (autoPerbaikanIdx ?? 4);
         const performanceIdx = columns?.colPerformance ? colToIndex(columns.colPerformance, 5) : (autoPerfIdx ?? 5);
 
-        const parsedRows = rows.slice(headerRowIndex >= 0 ? headerRowIndex + 1 : 0).map(row => {
+        const dataStartRow = maxHeaderRowIndex >= 0 ? maxHeaderRowIndex + 1 : 0;
+        const parsedRows = rows.slice(dataStartRow).map(row => {
           if (!Array.isArray(row)) return null;
 
           let perbaikanMateri = 0;
@@ -208,26 +213,33 @@ app.post("/api/read-sheets", async (req: any, res: any) => {
           let preliminaryScore = 0;
           
           if (row[preliminaryIdx] !== undefined && row[preliminaryIdx] !== null) {
-            const val = row[preliminaryIdx].toString().replace(',', '.').trim();
+            const val = row[preliminaryIdx].toString().replace(',', '.').replace(/[^0-9.]/g, '').trim();
             preliminaryScore = parseFloat(val) || 0;
           }
 
           if (row[perbaikanIdx] !== undefined && row[perbaikanIdx] !== null) {
-            const val = row[perbaikanIdx].toString().replace(',', '.').trim();
+            const val = row[perbaikanIdx].toString().replace(',', '.').replace(/[^0-9.]/g, '').trim();
             perbaikanMateri = parseFloat(val) || 0;
           }
 
           if (row[performanceIdx] !== undefined && row[performanceIdx] !== null) {
-            const val = row[performanceIdx].toString().replace(',', '.').trim();
+            const val = row[performanceIdx].toString().replace(',', '.').replace(/[^0-9.]/g, '').trim();
             performance = parseFloat(val) || 0;
           }
 
           const rawTeamCode = row[teamCodeIdx] !== undefined && row[teamCodeIdx] !== null ? row[teamCodeIdx].toString().trim() : "";
           const rawTeamName = row[teamNameIdx] !== undefined && row[teamNameIdx] !== null ? row[teamNameIdx].toString().trim() : "";
 
+          // Also check category column if available
+          let rawCategory = "";
+          if (autoCategoryIdx !== null && row[autoCategoryIdx] !== undefined && row[autoCategoryIdx] !== null) {
+            rawCategory = row[autoCategoryIdx].toString().trim();
+          }
+
           return {
             teamCode: rawTeamCode,
             teamName: rawTeamName,
+            category: rawCategory,
             preliminaryScore,
             perbaikanMateri,
             performance
@@ -237,10 +249,12 @@ app.post("/api/read-sheets", async (req: any, res: any) => {
           if (!r.teamCode && !r.teamName) return false;
           const codeLower = r.teamCode.toLowerCase();
           const nameLower = r.teamName.toLowerCase();
-          const headers = ['kategori', 'kode tim', 'nama tim', 'teams', 'id', 'no', 'peserta', 'tim', 'pos', 'rank', 'rising', 'leading'];
+          const headers = ['kategori', 'kode tim', 'nama tim', 'teams', 'team', 'id', 'no', 'peserta', 'tim', 'pos', 'rank', 'final innoparty', 'perbaikan materi', 'performance'];
           if (headers.includes(codeLower) || headers.includes(nameLower)) return false;
+          // Ignore rows where team code or name looks like header
+          if (codeLower === 'kode' || codeLower === 'kode tim' || nameLower === 'teams' || nameLower === 'nama tim') return false;
           return true;
-        }); 
+        });  
 
         results[sheetName] = parsedRows;
       } catch (err: any) {
