@@ -20,7 +20,7 @@ import { Lock } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'podium' | 'scoring' | 'master' | 'qr' | 'admin' | 'vote'>('podium');
-  
+
   // Real-time Firestore State (Instant load with cached or initial seed fallback)
   const [participants, setParticipants] = useState<Participant[]>(() => {
     try {
@@ -29,7 +29,7 @@ export default function App() {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed)) return parsed;
       }
-    } catch (e) {}
+    } catch (e) { }
     return [];
   });
 
@@ -44,7 +44,7 @@ export default function App() {
   const [activeJudgeId, setActiveJudgeId] = useState<number | null>(null);
   const [activeParticipantId, setActiveParticipantId] = useState<string | null>(null);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('QCC-Rising');
-  
+
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     try {
       return localStorage.getItem('innoparty_admin_logged_in') === 'true';
@@ -110,7 +110,7 @@ export default function App() {
       setIsAdminLoggedIn(true);
       try {
         localStorage.setItem('innoparty_admin_logged_in', 'true');
-      } catch (e) {}
+      } catch (e) { }
       setAdminPasswordInput('');
       setLoginError(null);
     } else {
@@ -122,7 +122,7 @@ export default function App() {
     setIsAdminLoggedIn(false);
     try {
       localStorage.removeItem('innoparty_admin_logged_in');
-    } catch (e) {}
+    } catch (e) { }
   };
 
   // Session login required to unlock all system menus unless accessing via direct Judge or Public links
@@ -167,24 +167,24 @@ export default function App() {
   // ----------------------------------------------------------------------
   if (showAdminLogin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-red-950 font-sans flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-stone-900 font-sans flex items-center justify-center p-4">
         <motion.div
           key="adminLogin"
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="max-w-md w-full bg-white p-8 sm:p-10 rounded-3xl shadow-2xl border border-slate-100 text-slate-900 relative overflow-hidden"
         >
-          {/* Decorative Top Accent */}
-          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-600 via-red-500 to-amber-500" />
+          {/* Decorative Top Gold Accent */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 wc-gold-line" />
 
           <div className="text-center space-y-3 mb-8">
-            <div className="w-16 h-16 bg-red-100 border border-red-200 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-              <Lock className="w-8 h-8 text-red-600" />
+            <div className="w-24 h-24 mx-auto flex items-center justify-center">
+              <img src="/mascot-hero.png" alt="Innoparty Mascot" className="w-full h-full object-contain drop-shadow-md" />
             </div>
-            <span className="inline-block text-[10px] font-black uppercase tracking-widest bg-red-100 text-red-700 px-3 py-1 rounded-full border border-red-200">
+            <span className="inline-block text-[10px] font-black uppercase tracking-widest bg-[#FDF8EC] text-[#A38A3A] px-3 py-1 rounded-full border border-[#E8D48B]">
               INNOPARTY 2026 • PORTAL UTAMA
             </span>
-            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight font-display">
               LOGIN ADMINISTRATOR
             </h2>
             <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed">
@@ -194,7 +194,7 @@ export default function App() {
 
           <form onSubmit={handleAdminLogin} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider">
+              <label className="block text-xs font-black text-slate-700 uppercase tracking-wider font-mono">
                 Kata Sandi Admin / Panitia
               </label>
               <input
@@ -202,20 +202,20 @@ export default function App() {
                 value={adminPasswordInput}
                 onChange={(e) => setAdminPasswordInput(e.target.value)}
                 placeholder="Masukkan kata sandi..."
-                className="w-full px-4 py-3.5 rounded-2xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-red-500 outline-none transition-all font-bold text-slate-900 text-sm shadow-inner"
+                className="w-full px-4 py-3.5 rounded-2xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#C9A84C] outline-none transition-all font-bold text-slate-900 text-sm shadow-inner"
                 autoFocus
               />
             </div>
 
             {loginError && (
-              <p className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-xl border border-red-200 text-center">
+              <p className="text-xs font-bold text-[#D80001] bg-red-50 p-3 rounded-xl border border-red-200 text-center">
                 {loginError}
               </p>
             )}
 
             <button
               type="submit"
-              className="w-full py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-red-600/30 active:scale-98"
+              className="w-full py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-slate-900/20 active:scale-98"
             >
               MASUK
             </button>
@@ -229,8 +229,27 @@ export default function App() {
   // TAMPILAN UTAMA APLIKASI
   // ----------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-red-500 selection:text-white">
-      
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#2563EB] selection:text-white relative overflow-x-hidden">
+
+      {/* Official World Cup 2026 Vibrant Gradient & Pattern Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-white">
+
+        {/* The 3 Host Nations Vibrant Ambient Glows */}
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-[#2563EB]/25 rounded-full blur-[140px]" /> {/* USA Blue */}
+        <div className="absolute top-1/4 -right-40 w-[600px] h-[600px] bg-[#10B981]/25 rounded-full blur-[140px]" /> {/* Mexico Green */}
+        <div className="absolute -bottom-20 left-1/4 w-[500px] h-[500px] bg-[#EF4444]/25 rounded-full blur-[140px]" /> {/* Canada Red */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#8B5CF6]/15 rounded-full blur-[160px]" /> {/* Brand Purple */}
+
+        {/* Official Geometric Pattern Overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.15] bg-repeat bg-center mix-blend-multiply"
+          style={{ backgroundImage: "url('/worldcup-pattern.png')", backgroundSize: '400px auto' }}
+        />
+
+        {/* Soft Fade Mask at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/70" />
+      </div>
+
       {/* Navbar Navigation */}
       {!isDirectJudgeOrVote && (
         <Navbar
@@ -250,9 +269,9 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 relative z-10">
         <AnimatePresence mode="wait">
-          
+
           {/* TAB 1: LIVE PODIUM SCOREBOARD */}
           {activeTab === 'podium' && (
             <motion.div
@@ -271,8 +290,6 @@ export default function App() {
               />
             </motion.div>
           )}
-
-          
 
           {/* TAB 3: MASTER PESERTA */}
           {activeTab === 'master' && (
@@ -309,10 +326,10 @@ export default function App() {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.2 }}
             >
-              <PublicVoteView 
-                participants={participants} 
-                publicVotes={publicVotes} 
-                initialCategoryFilter={activeCategoryFilter} 
+              <PublicVoteView
+                participants={participants}
+                publicVotes={publicVotes}
+                initialCategoryFilter={activeCategoryFilter}
               />
             </motion.div>
           )}
@@ -333,12 +350,16 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Footer Matchday Branding */}
-      <footer className="border-t border-slate-200  bg-white  py-6 mt-12 text-center text-xs text-slate-500 ">
+      {/* Footer with Elegant Gold Accent */}
+      <footer className="border-t border-slate-200/60 bg-white/90 backdrop-blur py-6 mt-16 text-center text-xs text-slate-500 relative z-10">
+        <div className="absolute top-0 left-0 right-0 h-[2px] wc-gold-line" />
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="font-bold text-slate-800  flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Innoparty 2026</span>
+          <div className="font-bold text-slate-800 flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#C9A84C]" />
+            <span className="font-display tracking-tight">Innoparty 2026 • Idea Innovation Impact</span>
+          </div>
+          <div className="text-slate-400 font-mono text-[11px]">
+            Innoparty 2026™ Edition
           </div>
         </div>
       </footer>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { LeaderboardEntry, LevelCategory, ContestSettings } from '../types';
 import { isJuri3RevealedForCategory, getParticipantCategoryKey, getProxyImageUrl } from '../lib/contestService';
 import { Trophy, Medal, Lock, Unlock, ShieldAlert, Sparkles, Star, Flame, Eye, EyeOff, Layers } from 'lucide-react';
+import Confetti from './Confetti';
 
 interface LivePodiumProps {
   leaderboard: LeaderboardEntry[];
@@ -60,23 +61,35 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
     <div className="space-y-6 pb-12 w-full">
       
       {/* Unified Competition Container */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         
-        {/* Header Section */}
-        <div className="p-6 md:p-8 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error-container text-on-error-container">
-            <Flame className="w-3.5 h-3.5 fill-current" />
-            <span className="text-label-sm uppercase font-bold">Top 3 Podium Champions</span>
+        {/* Header Section with Integrated Mascot Branding */}
+        <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-white via-slate-50/60 to-white">
+          <div className="flex items-center gap-3.5">
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FDF8EC] text-[#A38A3A] text-[9px] font-black uppercase tracking-widest font-mono border border-[#E8D48B]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C] animate-pulse" />
+                  Innoparty 2026 • Live Standings
+                </span>
+              </div>
+              <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight font-display flex items-center gap-2">
+                <span>Top 3 Podium Champions</span>
+                <span className="text-xs font-bold text-[#A38A3A] bg-[#FDF8EC] px-2 py-0.5 rounded-md border border-[#E8D48B] font-mono">
+                  {getCategoryTitle(activeCategoryFilter)}
+                </span>
+              </h2>
+            </div>
           </div>
 
           {/* Level Class Filter Buttons */}
-          <div className="flex items-center bg-surface-container p-1.5 rounded-2xl border border-outline-variant shadow-inner flex-wrap gap-1">
+          <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 flex-wrap gap-1">
             <button
               onClick={() => setActiveCategoryFilter('QCC-Rising')}
-              className={`px-3 py-2 rounded-xl text-label-md font-bold transition-all flex items-center space-x-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeCategoryFilter === 'QCC-Rising' || activeCategoryFilter === 'Rising'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  ? 'bg-slate-900 text-white shadow-sm font-black'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Star className="w-3.5 h-3.5 fill-current" />
@@ -84,10 +97,10 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
             </button>
             <button
               onClick={() => setActiveCategoryFilter('QCC-Leading')}
-              className={`px-3 py-2 rounded-xl text-label-md font-bold transition-all flex items-center space-x-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeCategoryFilter === 'QCC-Leading' || activeCategoryFilter === 'Leading'
-                  ? 'bg-primary-container text-on-primary-container shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  ? 'bg-slate-900 text-white shadow-sm font-black'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Flame className="w-3.5 h-3.5 fill-current" />
@@ -95,10 +108,10 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
             </button>
             <button
               onClick={() => setActiveCategoryFilter('SS')}
-              className={`px-3 py-2 rounded-xl text-label-md font-bold transition-all flex items-center space-x-1.5 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
                 activeCategoryFilter === 'SS'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  ? 'bg-slate-900 text-white shadow-sm font-black'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 fill-current" />
@@ -107,108 +120,117 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
           </div>
         </div>
 
-        {/* Podium Section (Integrated) */}
+        {/* Podium Section */}
         {rankedData.length > 0 && (
-          <div className="p-6 md:p-10 relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-container/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary-container/20 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
+          <div className="p-6 md:p-10 relative overflow-hidden bg-gradient-to-b from-white via-[#FDFBF5] to-white">
+            {/* Subtle Warm Gold Decorative Blurs */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#C9A84C]/5 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#E8D48B]/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
             
-            <div className="flex flex-col md:flex-row justify-center items-end gap-12 md:gap-8 h-auto md:h-[480px] pt-16 md:pt-24 pb-8">
+            {/* Confetti Effect */}
+            <Confetti />
+
+            {/* Left Mascot (Framing the Podium - Top) */}
+            <div className="hidden lg:block absolute top-4 left-6 w-36 h-36 z-30 pointer-events-none drop-shadow-xl hover:scale-110 transition-transform duration-500 origin-top">
+              <img src="/mascot-wave.png" alt="Mascot Wave" className="w-full h-full object-contain animate-mascot-wave" />
+            </div>
+
+            {/* Right Mascot (Framing the Podium - Top) */}
+            <div className="hidden lg:block absolute top-4 right-6 w-36 h-36 z-30 pointer-events-none drop-shadow-xl hover:scale-110 transition-transform duration-500 origin-top">
+              <img src="/mascot-champion.png" alt="Mascot Champion" className="w-full h-full object-contain animate-mascot-float" />
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-center items-end gap-12 md:gap-8 h-auto md:h-[480px] pt-16 md:pt-24 pb-8 relative z-20">
               
-              {/* Runner Up */}
-              <div className="podium-card w-full md:w-[30%] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center relative pb-6 pt-14 order-2 md:order-1 h-auto md:h-[85%] z-10 mt-12 md:mt-0">
+              {/* Runner Up (Juara 2 - Silver) */}
+              <div className="podium-card w-full md:w-[30%] bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center relative pb-6 pt-14 order-2 md:order-1 h-auto md:h-[85%] z-10 mt-12 md:mt-0 hover:border-slate-300 hover:shadow-md">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
-                  <div className="w-20 h-20 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center shadow-sm relative overflow-hidden">
+                  <div className="w-20 h-20 rounded-full bg-slate-50 border-4 border-white flex items-center justify-center shadow-md relative overflow-hidden ring-2 ring-slate-200">
                     <img className="w-full h-full object-cover" src={getProxyImageUrl(rank2?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Ul03BhQkZaAwqEsCbO1UmQ_xmcXp5B8i")} referrerPolicy="no-referrer" alt="Juara 2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
-                  <div className="absolute -bottom-2 w-6 h-6 bg-surface-variant border-2 border-surface-container-lowest rounded-full flex items-center justify-center">
-                    <span className="text-label-sm font-bold text-on-surface-variant">2</span>
+                  <div className="absolute -bottom-2 w-7 h-7 bg-[#94A3B8] border-2 border-white rounded-full flex items-center justify-center shadow-sm">
+                    <span className="text-[11px] font-black text-white font-mono">2</span>
                   </div>
                 </div>
-                
-                
                 
                 {rank2 ? (
                   <>
                     <div className="px-4 text-center mt-4 flex flex-col items-center w-full">
-                      <div className="bg-slate-200 text-slate-800 px-3.5 py-1 rounded-full text-[10px] font-black mb-2 uppercase tracking-widest shadow-sm border border-slate-300">
+                      <div className="bg-slate-100 text-slate-600 px-3.5 py-1 rounded-full text-[10px] font-black mb-2 uppercase tracking-widest border border-slate-200 font-mono">
                         RUNNER UP (JUARA 2)
                       </div>
-                      <span className="inline-block px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded mb-2 tracking-wider uppercase">{getCategoryBadge(rank2.participant)}</span>
-                      <h3 className="text-headline-md font-bold text-on-surface mt-1 mb-4 text-center">{rank2.participant.name}</h3>
+                      <span className="inline-block px-2.5 py-0.5 bg-slate-50 text-slate-500 text-[10px] font-bold rounded-md mb-2 tracking-wider uppercase border border-slate-200 font-mono">{getCategoryBadge(rank2.participant)}</span>
+                      <h3 className="text-headline-md font-bold text-slate-900 mt-1 mb-4 text-center font-display">{rank2.participant.name}</h3>
                     </div>
-                    <div className="w-full mt-auto pt-5 border-t border-outline-variant text-center bg-surface-bright rounded-b-xl flex flex-col justify-center min-h-[80px]">
-                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Skor</p>
-                      <p className="text-headline-xl font-bold text-on-surface">{rank2.calculatedTotal}</p>
+                    <div className="w-full mt-auto pt-5 border-t border-slate-100 text-center bg-slate-50/60 rounded-b-2xl flex flex-col justify-center min-h-[80px]">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 font-mono">Total Skor</p>
+                      <p className="text-headline-xl font-black text-slate-800 font-display">{rank2.calculatedTotal}</p>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm text-on-surface-variant mt-6 font-medium">Belum Ada Juara 2</div>
+                  <div className="flex-1 flex items-center justify-center text-sm text-slate-400 mt-6 font-medium">Belum Ada Juara 2</div>
                 )}
               </div>
 
-              {/* Champion */}
-              <div className="podium-card champion-card w-full md:w-[35%] bg-surface-container-lowest rounded-xl border-2 border-primary-container flex flex-col items-center relative pb-6 pt-16 order-1 md:order-2 h-auto md:h-full z-20 mt-16 md:mt-0">
-                
+              {/* Champion (Juara 1 - Championship Gold 🏆) */}
+              <div className="podium-card champion-card w-full md:w-[35%] bg-white rounded-2xl border-2 border-[#C9A84C] ring-4 ring-[#C9A84C]/15 flex flex-col items-center relative pb-6 pt-16 order-1 md:order-2 h-auto md:h-full z-20 mt-16 md:mt-0">
                 
                 <div className="absolute -top-14 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
-                  <div className="w-28 h-28 rounded-full bg-primary-container border-4 border-surface-container-lowest flex items-center justify-center shadow-lg relative overflow-hidden">
+                  <div className="w-28 h-28 rounded-full bg-[#FDF8EC] border-4 border-white flex items-center justify-center shadow-lg relative overflow-hidden ring-4 ring-[#C9A84C]/30">
                     <img className="w-full h-full object-cover scale-110" src={getProxyImageUrl(rank1?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Nqk3jCqgImxHr2HfZb4NvWqofBO7N0AK")} referrerPolicy="no-referrer" alt="Juara 1" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
-                  <div className="absolute bottom-0 -right-2 w-8 h-8 bg-primary border-2 border-surface-container-lowest rounded-full flex items-center justify-center shadow-sm">
-                    <span className="text-label-md font-bold text-on-primary">1</span>
+                  <div className="absolute bottom-0 -right-2 w-9 h-9 bg-[#C9A84C] border-2 border-white rounded-full flex items-center justify-center shadow-md">
+                    <span className="text-sm font-black text-white font-mono">1</span>
                   </div>
                 </div>
 
                 {rank1 ? (
                   <>
                     <div className="px-4 text-center mt-4 flex flex-col items-center w-full">
-                      <div className="bg-amber-400 text-amber-950 px-4 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 mb-2 shadow-sm uppercase tracking-widest border border-amber-300">
-                        <Trophy className="w-4 h-4 fill-current text-amber-950" />
+                      <div className="bg-[#C9A84C] text-white px-4 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 mb-2 shadow-sm uppercase tracking-widest font-mono">
+                        <Trophy className="w-4 h-4 fill-current" />
                         <span>CHAMPION (JUARA 1)</span>
                       </div>
-                      <span className="inline-block px-3 py-0.5 bg-primary-container text-on-primary-container text-[11px] font-bold rounded-full mb-3 tracking-wider shadow-sm uppercase">{getCategoryBadge(rank1.participant)}</span>
-                      <h3 className="text-headline-lg font-bold text-on-surface mb-4 text-center">{rank1.participant.name}</h3>
+                      <span className="inline-block px-3 py-0.5 bg-[#FDF8EC] text-[#A38A3A] text-[11px] font-bold rounded-full mb-3 tracking-wider shadow-sm uppercase border border-[#E8D48B] font-mono">{getCategoryBadge(rank1.participant)}</span>
+                      <h3 className="text-headline-lg font-bold text-slate-900 mb-4 text-center font-display">{rank1.participant.name}</h3>
                     </div>
-                    <div className="w-full mt-auto pt-6 border-t border-primary-fixed bg-primary-fixed-dim/10 text-center rounded-b-xl border-x-4 border-b-4 border-primary-container flex flex-col justify-center min-h-[100px]">
-                      <p className="text-[11px] font-bold text-primary uppercase tracking-widest mb-1">Total Skor</p>
-                      <p className="text-headline-xl font-black text-primary-container text-[40px] leading-none drop-shadow-sm">{rank1.calculatedTotal}</p>
+                    <div className="w-full mt-auto pt-6 border-t border-[#E8D48B]/60 bg-[#FDF8EC]/70 text-center rounded-b-2xl flex flex-col justify-center min-h-[100px]">
+                      <p className="text-[11px] font-bold text-[#A38A3A] uppercase tracking-widest mb-1 font-mono">Total Skor</p>
+                      <p className="text-[42px] font-black text-slate-900 leading-none font-display">{rank1.calculatedTotal}</p>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm text-primary mt-10 font-medium">Belum Ada Juara 1</div>
+                  <div className="flex-1 flex items-center justify-center text-sm text-slate-400 mt-10 font-medium">Belum Ada Juara 1</div>
                 )}
               </div>
 
-              {/* 3rd Place */}
-              <div className="podium-card w-full md:w-[30%] bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col items-center relative pb-6 pt-14 order-3 h-auto md:h-[80%] z-10 mt-12 md:mt-0">
+              {/* 3rd Place (Juara 3 - Bronze) */}
+              <div className="podium-card w-full md:w-[30%] bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center relative pb-6 pt-14 order-3 h-auto md:h-[80%] z-10 mt-12 md:mt-0 hover:border-[#CD7F32]/40 hover:shadow-md">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
-                  <div className="w-20 h-20 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center shadow-sm relative overflow-hidden">
+                  <div className="w-20 h-20 rounded-full bg-orange-50 border-4 border-white flex items-center justify-center shadow-md relative overflow-hidden ring-2 ring-[#CD7F32]/20">
                     <img className="w-full h-full object-cover" src={getProxyImageUrl(rank3?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1HQ2l_Uy0ymzlbfNCYZojRqLmmZLUXXZM")} referrerPolicy="no-referrer" alt="Juara 3" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
-                  <div className="absolute -bottom-2 w-6 h-6 bg-[#CD7F32] border-2 border-surface-container-lowest rounded-full flex items-center justify-center">
-                    <span className="text-label-sm font-bold text-white">3</span>
+                  <div className="absolute -bottom-2 w-7 h-7 bg-[#CD7F32] border-2 border-white rounded-full flex items-center justify-center shadow-sm">
+                    <span className="text-[11px] font-black text-white font-mono">3</span>
                   </div>
                 </div>
 
-                
-                
                 {rank3 ? (
                   <>
                     <div className="px-4 text-center mt-4 flex flex-col items-center w-full">
-                      <div className="bg-[#CD7F32] text-white px-3.5 py-1 rounded-full text-[10px] font-black mb-2 uppercase tracking-widest shadow-sm">
+                      <div className="bg-orange-50 text-[#CD7F32] px-3.5 py-1 rounded-full text-[10px] font-black mb-2 uppercase tracking-widest border border-orange-200 font-mono">
                         3RD PLACE (JUARA 3)
                       </div>
-                      <span className="inline-block px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded mb-2 tracking-wider border border-outline-variant/30 uppercase">{getCategoryBadge(rank3.participant)}</span>
-                      <h3 className="text-headline-md font-bold text-on-surface mt-1 mb-4 text-center">{rank3.participant.name}</h3>
+                      <span className="inline-block px-2.5 py-0.5 bg-slate-50 text-slate-500 text-[10px] font-bold rounded-md mb-2 tracking-wider border border-slate-200 uppercase font-mono">{getCategoryBadge(rank3.participant)}</span>
+                      <h3 className="text-headline-md font-bold text-slate-900 mt-1 mb-4 text-center font-display">{rank3.participant.name}</h3>
                     </div>
-                    <div className="w-full mt-auto pt-5 border-t border-outline-variant text-center bg-surface-bright rounded-b-xl flex flex-col justify-center min-h-[80px]">
-                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1">Total Skor</p>
-                      <p className="text-headline-xl font-bold text-[#CD7F32]">{rank3.calculatedTotal}</p>
+                    <div className="w-full mt-auto pt-5 border-t border-slate-100 text-center bg-slate-50/60 rounded-b-2xl flex flex-col justify-center min-h-[80px]">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 font-mono">Total Skor</p>
+                      <p className="text-headline-xl font-black text-slate-800 font-display">{rank3.calculatedTotal}</p>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm text-on-surface-variant mt-6 font-medium">Belum Ada Juara 3</div>
+                  <div className="flex-1 flex items-center justify-center text-sm text-slate-400 mt-6 font-medium">Belum Ada Juara 3</div>
                 )}
               </div>
             </div>
@@ -217,43 +239,44 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
 
         {/* Standings Table Section (Integrated - Only shown if more than 3 participants) */}
         {rankedData.length > 3 && (
-          <div className="border-t border-outline-variant/30">
-            <div className="overflow-x-auto">
+          <div className="border-t border-slate-100">
+            {/* DESKTOP TABLE */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-surface-container text-on-surface-variant text-[11px] font-bold uppercase tracking-wider border-b border-outline-variant">
+                <thead className="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200 font-mono">
                   <tr>
                     <th className="py-3.5 px-4 w-16 text-center">POS</th>
                     <th className="py-3.5 px-6">NAMA TIM / PESERTA</th>
                     <th className="py-3.5 px-4 text-center w-32">KATEGORI</th>
-                    <th className="py-3.5 px-6 text-center w-40 bg-primary-container/20 text-primary font-black">TOTAL SKOR</th>
+                    <th className="py-3.5 px-6 text-center w-40 bg-slate-900 text-white font-black">TOTAL SKOR</th>
                   </tr>
                 </thead>
-                <tbody className="text-body-sm text-on-surface divide-y divide-outline-variant">
+                <tbody className="text-sm text-slate-800 divide-y divide-slate-100">
                   {rankedData.slice(3).map((item, index) => {
                     return (
                       <tr 
                         key={item.participant.id || `row-${index}`} 
-                        className="hover:bg-surface-container-low transition-colors group"
+                        className="hover:bg-slate-50/80 transition-colors group"
                       >
                         <td className="py-4 px-4 text-center">
-                          <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant mx-auto font-mono">
+                          <div className="w-8 h-8 rounded bg-slate-100 text-slate-600 font-bold flex items-center justify-center border border-slate-200 mx-auto font-mono text-xs">
                             {item.rank}
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <div className="font-bold text-on-surface text-body-md">{item.participant.name}</div>
-                          <div className="text-xs text-on-surface-variant line-clamp-1">"{item.participant.projectTitle}"</div>
+                          <div className="font-bold text-slate-900">{item.participant.name}</div>
+                          <div className="text-xs text-slate-400 line-clamp-1">"{item.participant.projectTitle}"</div>
                         </td>
                         <td className="py-4 px-4 text-center">
-                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border ${
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border font-mono ${
                             item.participant.levelCategory === 'Leading'
-                              ? 'bg-purple-50 text-purple-700 border-purple-200'
-                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-slate-900 text-white border-slate-900'
+                              : 'bg-[#FDF8EC] text-[#A38A3A] border-[#E8D48B]'
                           }`}>
                             {item.participant.levelCategory || item.participant.category || item.participant.stream}
                           </span>
                         </td>
-                        <td className="py-4 px-6 text-center bg-surface-bright font-black text-body-lg text-red-600 font-mono">
+                        <td className="py-4 px-6 text-center bg-slate-50 font-black text-base text-slate-900 font-mono">
                           {typeof item.calculatedTotal === 'number' ? item.calculatedTotal : '—'}
                         </td>
                       </tr>
@@ -263,42 +286,41 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
               </table>
             </div>
 
-
             {/* MOBILE CARDS VIEW */}
-            <div className="block md:hidden divide-y divide-outline-variant border-t border-outline-variant">
+            <div className="block md:hidden divide-y divide-slate-100 border-t border-slate-100">
               {rankedData.slice(3).map((item, index) => {
                 return (
                   <div 
                     key={item.participant.id || `card-${index}`}
-                    className="p-4 space-y-3 bg-surface-container-lowest"
+                    className="p-4 space-y-3 bg-white"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center space-x-2.5">
-                        <div className="w-8 h-8 rounded bg-surface text-on-surface-variant font-bold flex items-center justify-center border border-outline-variant shrink-0">
+                        <div className="w-8 h-8 rounded bg-slate-100 text-slate-600 font-bold flex items-center justify-center border border-slate-200 shrink-0 text-xs font-mono">
                           {item.rank}
                         </div>
                         <div>
-                          <h4 className="font-bold text-on-surface text-body-md leading-tight">
+                          <h4 className="font-bold text-slate-900 text-sm leading-tight font-display">
                             {item.participant.name}
                           </h4>
                         </div>
                       </div>
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shrink-0 ${
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shrink-0 font-mono ${
                         item.participant.levelCategory === 'Leading'
-                          ? 'bg-[#F3E8FF] text-[#6B21A8]'
-                          : 'bg-emerald-50 text-emerald-700'
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-[#FDF8EC] text-[#A38A3A]'
                       }`}>
                         {item.participant.levelCategory || item.participant.category}
                       </span>
                     </div>
 
-                    <p className="text-body-sm text-on-surface-variant bg-surface p-2.5 rounded-lg border border-outline-variant">
+                    <p className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                       "{item.participant.projectTitle}"
                     </p>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-outline-variant/50">
-                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total Skor</span>
-                      <span className="text-headline-md font-bold text-red-600 font-mono">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Total Skor</span>
+                      <span className="text-xl font-bold text-slate-900 font-mono">
                         {typeof item.calculatedTotal === 'number' ? item.calculatedTotal : '—'}
                       </span>
                     </div>
@@ -310,6 +332,5 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
         )}
       </div>
     </div>
-
   );
 };

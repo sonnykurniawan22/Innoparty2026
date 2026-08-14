@@ -4,102 +4,94 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --color-inverse-on-surface: #f0f1f2;
-  --color-secondary-fixed-dim: #bbc9d0;
-  --color-on-secondary: #ffffff;
-  --color-surface-bright: #f8f9fa;
-  --color-on-background: #191c1d;
-  --color-on-error: #ffffff;
-  --color-on-secondary-container: #57656b;
-  --color-primary-container: #ffc107;
-  --color-secondary-container: #d4e2e9;
-  --color-tertiary: #6a5b56;
-  --color-primary: #785900;
-  --color-tertiary-fixed-dim: #d6c3bc;
-  --color-surface-variant: #e1e3e4;
-  --color-inverse-surface: #2e3132;
-  --color-error-container: #ffdad6;
-  --color-on-secondary-fixed-variant: #3c494f;
-  --color-primary-fixed-dim: #fabd00;
-  --color-on-tertiary-container: #60524e;
-  --color-on-tertiary-fixed-variant: #51443f;
-  --color-outline: #827660;
-  --color-surface-dim: #d9dadb;
-  --color-on-secondary-fixed: #101d23;
-  --color-primary-fixed: #ffdf9e;
-  --color-on-primary: #ffffff;
-  --color-background: #f8f9fa;
-  --color-on-primary-container: #6d5100;
-  --color-surface-container: #edeeef;
-  --color-on-surface: #191c1d;
-  --color-on-surface-variant: #4f4632;
-  --color-tertiary-container: #dac7c1;
-  --color-surface-tint: #785900;
-  --color-secondary-fixed: #d7e5ec;
-  --color-on-primary-fixed-variant: #5b4300;
-  --color-inverse-primary: #fabd00;
-  --color-error: #ba1a1a;
-  --color-on-tertiary: #ffffff;
-  --color-surface-container-highest: #e1e3e4;
-  --color-surface-container-high: #e7e8e9;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface: #f8f9fa;
-  --color-on-primary-fixed: #261a00;
-  --color-outline-variant: #d4c5ab;
-  --color-surface-container-low: #f3f4f5;
-  --color-tertiary-fixed: #f2ded8;
-  --color-on-error-container: #93000a;
-  --color-secondary: #536067;
-  --color-on-tertiary-fixed: #231915;
 
-  --text-headline-xl: 32px;
-  --text-headline-xl--line-height: 40px;
-  --text-headline-xl--letter-spacing: -0.02em;
-  --text-headline-xl--font-weight: 700;
-  
-  --text-headline-lg: 24px;
-  --text-headline-lg--line-height: 32px;
-  --text-headline-lg--letter-spacing: -0.01em;
-  --text-headline-lg--font-weight: 700;
-  
-  --text-headline-md: 20px;
-  --text-headline-md--line-height: 28px;
-  --text-headline-md--font-weight: 600;
+  /* ===== Official FIFA World Cup 2026™ Core Identity ===== */
+  /* The official palette is: Black, White, Gold              */
+  --color-wc-gold: #C9A84C;
+  /* Championship Gold */
+  --color-wc-gold-light: #E8D48B;
+  /* Light Gold */
+  --color-wc-gold-dark: #A38A3A;
+  /* Dark Gold */
+  --color-wc-black: #1A1A1A;
+  /* Rich Black */
+  --color-wc-silver: #94A3B8;
+  /* Silver / Runner Up */
+  --color-wc-bronze: #CD7F32;
+  /* Bronze / 3rd Place */
 
-  --text-body-lg: 16px;
-  --text-body-lg--line-height: 24px;
-  --text-body-lg--font-weight: 400;
-
-  --text-body-md: 14px;
-  --text-body-md--line-height: 20px;
-  --text-body-md--font-weight: 400;
-
-  --text-body-sm: 12px;
-  --text-body-sm--line-height: 16px;
-  --text-body-sm--font-weight: 400;
-
-  --text-label-lg: 14px;
-  --text-label-lg--line-height: 20px;
-  --text-label-lg--letter-spacing: 0.05em;
-  --text-label-lg--font-weight: 600;
-
-  --text-label-md: 12px;
-  --text-label-md--line-height: 16px;
-  --text-label-md--letter-spacing: 0.05em;
-  --text-label-md--font-weight: 600;
-
-  --text-label-sm: 10px;
-  --text-label-sm--line-height: 12px;
-  --text-label-sm--letter-spacing: 0.08em;
-  --text-label-sm--font-weight: 700;
+  /* ===== Design Tokens ===== */
+  --color-primary: #1A1A1A;
+  --color-accent: #C9A84C;
+  --color-error: #DC2626;
+  --color-surface-bright: #FFFFFF;
+  --color-surface: #FAFBFC;
 }
 
+/* ===== World Cup 2026 Gold Gradient ===== */
+.wc-gold-line {
+  background: linear-gradient(90deg, transparent 0%, #C9A84C 20%, #E8D48B 50%, #C9A84C 80%, transparent 100%);
+}
+
+/* ===== Podium Card Transitions ===== */
 .podium-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
+
 .podium-card:hover {
-    transform: translateY(-4px);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
 }
+
 .champion-card {
-    box-shadow: 0px 12px 30px rgba(255, 193, 7, 0.15);
+  box-shadow: 0px 8px 30px rgba(201, 168, 76, 0.18);
+}
+
+.champion-card:hover {
+  box-shadow: 0px 14px 40px rgba(201, 168, 76, 0.25);
+}
+
+/* ===== Mascot Animations (GIF-like) ===== */
+@keyframes mascotFloat {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+
+  75% {
+    transform: translateY(6px) rotate(2deg);
+  }
+}
+
+@keyframes mascotWave {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+
+  20% {
+    transform: translateY(-5px) rotate(-6deg) scale(1.02);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(8deg) scale(1.05);
+  }
+
+  80% {
+    transform: translateY(-3px) rotate(-4deg) scale(1.01);
+  }
+}
+
+.animate-mascot-float {
+  animation: mascotFloat 4s ease-in-out infinite;
+}
+
+.animate-mascot-wave {
+  animation: mascotWave 3.5s ease-in-out infinite;
 }
