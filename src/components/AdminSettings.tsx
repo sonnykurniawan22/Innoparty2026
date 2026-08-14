@@ -58,6 +58,22 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
   // Compute leaderboard with full breakdown
   const leaderboard = computeLeaderboard(participants, scores, publicVotes);
 
+  const getJudgeDisplayName = (stream: string | undefined, score: { judgeId: number; judgeName?: string }) => {
+    let name = score.judgeName;
+    if (!name || name === 'Juri Spreadsheet' || name === 'Juri') {
+      if (stream === 'SS') {
+        if (score.judgeId === 1) name = ssJuri1;
+        else if (score.judgeId === 2) name = ssJuri2;
+        else if (score.judgeId === 3) name = ssJuri3;
+      } else {
+        if (score.judgeId === 1) name = qccJuri1;
+        else if (score.judgeId === 2) name = qccJuri2;
+        else if (score.judgeId === 3) name = qccJuri3;
+      }
+    }
+    return name || `Juri ${score.judgeId}`;
+  };
+
   // Categories list
   const uniqueCategories = ['QCC-Rising', 'QCC-Leading', 'SS'];
 
@@ -145,7 +161,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
             judgeId as 1 | 2 | 3,
             { performance: row.performance, perbaikanMateri: row.perbaikanMateri },
             "Disinkronisasi dari Google Sheets",
-            "Juri Spreadsheet"
+            sheetName
           ));
         }
       }
@@ -651,7 +667,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                         </span>
                         {pScores.length > 0 && (
                           <div className="text-[9px] text-slate-400 mt-0.5 truncate max-w-[120px] mx-auto">
-                            {pScores.map(s => s.judgeName || `Juri ${s.judgeId}`).join(', ')}
+                            {pScores.map(s => {
+                              const rawName = getJudgeDisplayName(item.participant.stream, s);
+                              return rawName.startsWith('Penilaian') ? rawName : `Penilaian ${rawName}`;
+                            }).join(', ')}
                           </div>
                         )}
                       </td>
@@ -806,15 +825,19 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                             </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                              {pScores.map((score) => (
+                              {pScores.map((score) => {
+                                const rawName = getJudgeDisplayName(p.stream, score);
+                                const titleName = rawName.startsWith('Penilaian') ? rawName : `Penilaian ${rawName}`;
+                                const sheetLabel = rawName.replace(/^Penilaian\s+/, '');
+                                return (
                                 <div key={score.id} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
                                   <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
                                     <div>
                                       <span className="font-black text-slate-900 block text-xs">
-                                        {score.judgeName || `Juri ${score.judgeId}`}
+                                        {titleName}
                                       </span>
                                       <span className="text-[10px] font-semibold text-slate-400 block">
-                                        Slot: Juri {score.judgeId}
+                                        Sheet: {sheetLabel} (Slot {score.judgeId})
                                       </span>
                                     </div>
                                     <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-black font-mono">
@@ -844,7 +867,8 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                                     </div>
                                   )}
                                 </div>
-                              ))}
+                              );
+                              })}
                             </div>
                           )}
 
