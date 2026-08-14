@@ -84,9 +84,21 @@ export async function submitPublicVote(
   comment?: string
 ) {
   const cleanGroup = voterGroup.trim();
-  // Gunakan voterToken sebagai bagian dari ID dokumen agar satu perangkat hanya bisa memiliki 1 suara per kategori
-  const docId = `${category}_${voterToken}`;
+  if (!cleanGroup) {
+    throw new Error("Pilih kelompok pemilih terlebih dahulu.");
+  }
+
+  // Gunakan slug nama kelompok dan kategori sebagai ID dokumen unik di Firestore
+  // Sehingga 1 kelompok hanya bisa tercatat 1 kali per kategori di database (100% anti-incognito & anti-duplikat)
+  const groupSlug = cleanGroup.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const docId = `${category}_${groupSlug}`;
   const voteDocRef = doc(db, PUBLIC_VOTES_COL, docId);
+
+  // Periksa apakah kelompok ini sudah pernah memilih di kategori ini
+  const existingSnap = await getDoc(voteDocRef);
+  if (existingSnap.exists()) {
+    throw new Error(`Kelompok "${cleanGroup}" sudah tercatat memberikan suara untuk kategori ${category}.`);
+  }
 
   const voteData: PublicVote = {
     id: docId,

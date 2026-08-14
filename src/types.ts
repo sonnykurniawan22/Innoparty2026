@@ -4,6 +4,22 @@ export interface IndicatorItem {
   detail: string;
 }
 
+export const OFFICIAL_VOTER_GROUPS = [
+  'Cut Nyak Dhien',
+  'Jenderal Soedirman',
+  'Sultan Hasanuddin',
+  'Tuanku Imam Bonjol',
+  'R.A. Kartini',
+  'Bung Hatta',
+  'Pangeran Diponegoro',
+  'K.H. Agus Salim',
+  'Ir. Soekarno',
+  'I Gusti Ngurah Rai',
+  'Komite Agustus'
+] as const;
+
+export type OfficialVoterGroup = typeof OFFICIAL_VOTER_GROUPS[number];
+
 export interface Criterion {
   id: string;
   category: 'ALL' | 'QCC-Rising' | 'QCC-Leading' | 'SS';
