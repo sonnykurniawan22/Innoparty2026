@@ -5,7 +5,7 @@ import { Participant } from '../types';
 import { Copy, Check, Maximize2, Minimize2, Download, Heart, Users } from 'lucide-react';
 
 export const JudgeQRModal: React.FC<{ participants: Participant[] }> = ({ participants }) => {
-  const [publicCategory, setPublicCategory] = useState<string>('ALL');
+  const [publicCategory, setPublicCategory] = useState<string>('QCC-Rising');
   const [publicQrData, setPublicQrData] = useState<string>('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   
@@ -52,8 +52,8 @@ export const JudgeQRModal: React.FC<{ participants: Participant[] }> = ({ partic
 
           <div className="space-y-3">
             <label className="block text-xs font-bold text-slate-700">Filter Kategori Vote:</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {['ALL', 'QCC-Rising', 'QCC-Leading', 'SS'].map((cat) => (
+            <div className="grid grid-cols-3 gap-2">
+              {['QCC-Rising', 'QCC-Leading', 'SS'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setPublicCategory(cat)}
@@ -63,7 +63,7 @@ export const JudgeQRModal: React.FC<{ participants: Participant[] }> = ({ partic
                       : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
                   }`}
                 >
-                  {cat === 'ALL' ? 'Semua Kategori' : cat}
+                  {cat}
                 </button>
               ))}
             </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ContestSettings, Participant, JudgeScore, PublicVote } from '../types';
-import { updateContestSettings, computeLeaderboard, getParticipantCategoryKey, clearAllScores, clearAllPublicVotes, saveJudgeScore } from '../lib/contestService';
+import { updateContestSettings, computeLeaderboard, getParticipantCategoryKey, clearAllScores, clearAllPublicVotes, saveJudgeScore, deleteJudgeScore, updateParticipant } from '../lib/contestService';
 import { 
   Settings, 
   Sparkles, 
@@ -45,16 +45,16 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
   const [ssJuri3, setSsJuri3] = useState(settings.ssJuri3SheetName ?? 'Juri 3');
 
   // Custom Column Configuration QCC
-  const [colQccTeamCode, setColQccTeamCode] = useState(settings.colQccTeamCode || settings.colTeamCode || 'A');
-  const [colQccTeamName, setColQccTeamName] = useState(settings.colQccTeamName || settings.colTeamName || 'B');
-  const [colQccPerbaikanMateri, setColQccPerbaikanMateri] = useState(settings.colQccPerbaikanMateri || settings.colPerbaikanMateri || 'D');
-  const [colQccPerformance, setColQccPerformance] = useState(settings.colQccPerformance || settings.colPerformance || 'E');
+  const [colQccTeamCode, setColQccTeamCode] = useState(settings.colQccTeamCode || settings.colTeamCode || 'B');
+  const [colQccTeamName, setColQccTeamName] = useState(settings.colQccTeamName || settings.colTeamName || 'C');
+  const [colQccPerbaikanMateri, setColQccPerbaikanMateri] = useState(settings.colQccPerbaikanMateri || settings.colPerbaikanMateri || 'E');
+  const [colQccPerformance, setColQccPerformance] = useState(settings.colQccPerformance || settings.colPerformance || 'F');
 
   // Custom Column Configuration SS
-  const [colSsTeamCode, setColSsTeamCode] = useState(settings.colSsTeamCode || settings.colTeamCode || 'A');
-  const [colSsTeamName, setColSsTeamName] = useState(settings.colSsTeamName || settings.colTeamName || 'B');
-  const [colSsPerbaikanMateri, setColSsPerbaikanMateri] = useState(settings.colSsPerbaikanMateri || settings.colPerbaikanMateri || 'D');
-  const [colSsPerformance, setColSsPerformance] = useState(settings.colSsPerformance || settings.colPerformance || 'E');
+  const [colSsTeamCode, setColSsTeamCode] = useState(settings.colSsTeamCode || settings.colTeamCode || 'B');
+  const [colSsTeamName, setColSsTeamName] = useState(settings.colSsTeamName || settings.colTeamName || 'C');
+  const [colSsPerbaikanMateri, setColSsPerbaikanMateri] = useState(settings.colSsPerbaikanMateri || settings.colPerbaikanMateri || 'E');
+  const [colSsPerformance, setColSsPerformance] = useState(settings.colSsPerformance || settings.colPerformance || 'F');
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('');
@@ -74,14 +74,15 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
   const getJudgeDisplayName = (stream: string | undefined, score: { judgeId: number; judgeName?: string }) => {
     let name = score.judgeName;
     if (!name || name === 'Juri Spreadsheet' || name === 'Juri') {
+      const jId = Number(score.judgeId);
       if (stream === 'SS') {
-        if (score.judgeId === 1) name = ssJuri1;
-        else if (score.judgeId === 2) name = ssJuri2;
-        else if (score.judgeId === 3) name = ssJuri3;
+        if (jId === 1) name = ssJuri1;
+        else if (jId === 2) name = ssJuri2;
+        else if (jId === 3) name = ssJuri3;
       } else {
-        if (score.judgeId === 1) name = qccJuri1;
-        else if (score.judgeId === 2) name = qccJuri2;
-        else if (score.judgeId === 3) name = qccJuri3;
+        if (jId === 1) name = qccJuri1;
+        else if (jId === 2) name = qccJuri2;
+        else if (jId === 3) name = qccJuri3;
       }
     }
     return name || `Juri ${score.judgeId}`;
@@ -108,6 +109,30 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
   };
 
   
+  // Keep local states synced with Firestore settings when settings prop updates
+  React.useEffect(() => {
+    if (settings) {
+      if (settings.qccSpreadsheetId !== undefined) setQccSpreadsheetId(settings.qccSpreadsheetId);
+      if (settings.ssSpreadsheetId !== undefined) setSsSpreadsheetId(settings.ssSpreadsheetId);
+      if (settings.qccJuri1SheetName !== undefined) setQccJuri1(settings.qccJuri1SheetName);
+      if (settings.qccJuri2SheetName !== undefined) setQccJuri2(settings.qccJuri2SheetName);
+      if (settings.qccJuri3SheetName !== undefined) setQccJuri3(settings.qccJuri3SheetName);
+      if (settings.ssJuri1SheetName !== undefined) setSsJuri1(settings.ssJuri1SheetName);
+      if (settings.ssJuri2SheetName !== undefined) setSsJuri2(settings.ssJuri2SheetName);
+      if (settings.ssJuri3SheetName !== undefined) setSsJuri3(settings.ssJuri3SheetName);
+
+      if (settings.colQccTeamCode || settings.colTeamCode) setColQccTeamCode(settings.colQccTeamCode || settings.colTeamCode || 'A');
+      if (settings.colQccTeamName || settings.colTeamName) setColQccTeamName(settings.colQccTeamName || settings.colTeamName || 'B');
+      if (settings.colQccPerbaikanMateri || settings.colPerbaikanMateri) setColQccPerbaikanMateri(settings.colQccPerbaikanMateri || settings.colPerbaikanMateri || 'D');
+      if (settings.colQccPerformance || settings.colPerformance) setColQccPerformance(settings.colQccPerformance || settings.colPerformance || 'E');
+
+      if (settings.colSsTeamCode || settings.colTeamCode) setColSsTeamCode(settings.colSsTeamCode || settings.colTeamCode || 'A');
+      if (settings.colSsTeamName || settings.colTeamName) setColSsTeamName(settings.colSsTeamName || settings.colTeamName || 'B');
+      if (settings.colSsPerbaikanMateri || settings.colPerbaikanMateri) setColSsPerbaikanMateri(settings.colSsPerbaikanMateri || settings.colPerbaikanMateri || 'D');
+      if (settings.colSsPerformance || settings.colPerformance) setColSsPerformance(settings.colSsPerformance || settings.colPerformance || 'E');
+    }
+  }, [settings]);
+
   const [isAutoSync, setIsAutoSync] = useState(false);
   const syncIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -152,6 +177,9 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
       setIsUpdating(false);
       setSuccessMsg('Konfigurasi Google Sheets & Pemetaan Kolom Berhasil Disimpan!');
       setTimeout(() => setSuccessMsg(''), 3000);
+
+      // Auto sync using updated column mapping
+      handleSyncScores();
     } catch (err) {
       console.error("Error updating sheet config:", err);
       setIsUpdating(false);
@@ -160,35 +188,81 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
 
   const importSheetsToFirestore = async (sheetData: Record<string, any[]>, stream: string, judgeMapping: Record<string, number>) => {
     const batchPromises = [];
+    let syncedScores = 0;
+    let updatedPrelims = 0;
     
     for (const [sheetName, rows] of Object.entries(sheetData)) {
-      const judgeId = judgeMapping[sheetName];
-      if (!judgeId) continue;
+      let judgeId = judgeMapping[sheetName];
+      if (!judgeId) {
+        const found = Object.entries(judgeMapping).find(
+          ([k]) => k.trim().toLowerCase() === sheetName.trim().toLowerCase()
+        );
+        if (found) judgeId = found[1];
+      }
+      if (!judgeId) {
+        const lower = sheetName.toLowerCase();
+        if (lower.includes('2')) judgeId = 2;
+        else if (lower.includes('3')) judgeId = 3;
+        else judgeId = 1;
+      }
       
       for (const row of rows) {
-        const p = participants.find(part => {
+        const normalize = (s: string) => s ? s.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+        const rowCodeNorm = normalize(row.teamCode);
+        const rowNameNorm = normalize(row.teamName);
+
+        // 1. Try finding participant within matching stream
+        let p = participants.find(part => {
           if (part.stream !== stream) return false;
-          // Match by Kode Tim first, then fallback to name matching
-          if (part.teamCode && row.teamCode && part.teamCode.toLowerCase() === row.teamCode.toLowerCase()) {
-            return true;
-          }
-          const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-          return normalize(part.name) === normalize(row.teamName);
+          if (part.teamCode && rowCodeNorm && normalize(part.teamCode) === rowCodeNorm) return true;
+          if (part.name && rowNameNorm && normalize(part.name) === rowNameNorm) return true;
+          return false;
         });
+
+        // 2. Fallback: match across all participants regardless of stream
+        if (!p) {
+          p = participants.find(part => {
+            if (part.teamCode && rowCodeNorm && normalize(part.teamCode) === rowCodeNorm) return true;
+            if (part.name && rowNameNorm && normalize(part.name) === rowNameNorm) return true;
+            if (part.name && rowNameNorm) {
+              const pNorm = normalize(part.name);
+              if (pNorm.length > 3 && rowNameNorm.length > 3 && (pNorm.includes(rowNameNorm) || rowNameNorm.includes(pNorm))) {
+                return true;
+              }
+            }
+            return false;
+          });
+        }
         
         if (p) {
-          batchPromises.push(saveJudgeScore(
-            p.id,
-            judgeId as 1 | 2 | 3,
-            { performance: row.performance, perbaikanMateri: row.perbaikanMateri },
-            "Disinkronisasi dari Google Sheets",
-            sheetName
-          ));
+          const perf = Number(row.performance) || 0;
+          const mat = Number(row.perbaikanMateri) || 0;
+
+          if (perf > 0 || mat > 0) {
+            syncedScores++;
+            batchPromises.push(saveJudgeScore(
+              p.id,
+              judgeId as 1 | 2 | 3,
+              { performance: perf, perbaikanMateri: mat },
+              "Disinkronisasi dari Google Sheets",
+              sheetName
+            ));
+          } else {
+            // Jika nilai perbaikan materi & performance di Google Sheets kosong / 0,
+            // hapus skor juri agar statusnya kembali belum dinilai (null)
+            batchPromises.push(deleteJudgeScore(p.id, judgeId as 1 | 2 | 3));
+          }
+
+          if (typeof row.preliminaryScore === 'number' && row.preliminaryScore > 0 && row.preliminaryScore !== p.preliminaryScore) {
+            updatedPrelims++;
+            batchPromises.push(updateParticipant(p.id, { preliminaryScore: row.preliminaryScore }));
+          }
         }
       }
     }
     
     await Promise.all(batchPromises);
+    return { syncedScores, updatedPrelims };
   };
 
   const handleSyncScores = async () => {
@@ -196,6 +270,9 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
     setSyncStatus('Sedang menarik data dari Google Sheets...');
     
     try {
+      let totalSyncedScores = 0;
+      let totalUpdatedPrelims = 0;
+
       const fetchSheets = async (url: string, id: string, sheets: string[], stream: string, judgeMapping: Record<string, number>, colConfig: Record<string, string>) => {
         const res = await fetch(url, {
           method: 'POST',
@@ -209,7 +286,9 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         const data = await res.json();
         if (data.success) {
           setSyncStatus(`Menyimpan data ${stream} ke database...`);
-          await importSheetsToFirestore(data.data, stream, judgeMapping);
+          const result = await importSheetsToFirestore(data.data, stream, judgeMapping);
+          totalSyncedScores += result.syncedScores;
+          totalUpdatedPrelims += result.updatedPrelims;
         } else {
           throw new Error(data.error || 'Failed to fetch');
         }
@@ -247,8 +326,8 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
         });
       }
 
-      setSyncStatus('Sinkronisasi selesai!');
-      setTimeout(() => setSyncStatus(''), 3000);
+      setSyncStatus(`Sinkronisasi selesai! (Tersimpan: ${totalSyncedScores} data nilai juri, ${totalUpdatedPrelims} nilai penyisihan)`);
+      setTimeout(() => setSyncStatus(''), 4000);
     } catch (err: any) {
       console.error(err);
       setSyncStatus(`Gagal: ${err.message}`);

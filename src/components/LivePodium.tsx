@@ -21,6 +21,9 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
 }) => {
   // Filter leaderboard based on category filter
   const filteredLeaderboard = leaderboard.filter((item) => {
+    if (activeCategoryFilter === 'ALL') {
+      return true;
+    }
     if (activeCategoryFilter === 'QCC-Leading' || activeCategoryFilter === 'Leading') {
       return item.participant.stream === 'QCC' && item.participant.levelCategory === 'Leading';
     }
@@ -251,7 +254,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                           </span>
                         </td>
                         <td className="py-4 px-6 text-center bg-surface-bright font-black text-body-lg text-red-600 font-mono">
-                          {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
+                          {typeof item.calculatedTotal === 'number' ? item.calculatedTotal : '—'}
                         </td>
                       </tr>
                     );
@@ -296,7 +299,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                     <div className="flex items-center justify-between pt-2 border-t border-outline-variant/50">
                       <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total Skor</span>
                       <span className="text-headline-md font-bold text-red-600 font-mono">
-                        {item.calculatedTotal > 0 ? item.calculatedTotal : '—'}
+                        {typeof item.calculatedTotal === 'number' ? item.calculatedTotal : '—'}
                       </span>
                     </div>
                   </div>

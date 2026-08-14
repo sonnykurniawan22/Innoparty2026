@@ -56,29 +56,42 @@ export default function App() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isDirectJudgeOrVote, setIsDirectJudgeOrVote] = useState(false);
 
-  // Parse URL Parameters on initial load
+  // Parse URL Parameters & Pathname on initial load for QR Code Public & Juri links
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const pathname = window.location.pathname.toLowerCase();
+
     const tabParam = params.get('tab');
     const juriParam = params.get('juri') || params.get('judgeId');
     const viewParam = params.get('view');
-    const categoryParam = params.get('category');
-    const participantParam = params.get('participant');
+    const categoryParam = params.get('category') || params.get('cat');
+    const participantParam = params.get('participant') || params.get('team') || params.get('code') || params.get('id');
 
     if (participantParam) {
       setActiveParticipantId(participantParam);
+      setIsDirectJudgeOrVote(true);
     }
 
+    if (categoryParam) {
+      if (['Rising', 'Leading', 'QCC-Rising', 'QCC-Leading', 'SS', 'ALL'].includes(categoryParam)) {
+        setActiveCategoryFilter(categoryParam);
+      }
+    }
+
+    // Direct route detection for Public QR & Juri links
     if (juriParam && ['1', '2', '3'].includes(juriParam)) {
       const jId = parseInt(juriParam, 10);
       setActiveJudgeId(jId);
       setActiveTab('scoring');
       setIsDirectJudgeOrVote(true);
-    } else if (tabParam === 'vote' || viewParam === 'vote') {
+    } else if (pathname.includes('/vote') || tabParam === 'vote' || viewParam === 'vote' || categoryParam) {
       setActiveTab('vote');
       setIsDirectJudgeOrVote(true);
-    } else if (tabParam === 'scoring' || viewParam === 'scoring') {
+    } else if (pathname.includes('/scoring') || pathname.includes('/juri') || pathname.includes('/judge') || tabParam === 'scoring' || viewParam === 'scoring') {
       setActiveTab('scoring');
+      setIsDirectJudgeOrVote(true);
+    } else if (participantParam) {
+      setActiveTab('vote');
       setIsDirectJudgeOrVote(true);
     } else if (tabParam === 'podium' || viewParam === 'podium') {
       setActiveTab('podium');
@@ -88,12 +101,6 @@ export default function App() {
       setActiveTab('qr');
     } else if (tabParam === 'admin' || viewParam === 'admin') {
       setActiveTab('admin');
-    }
-
-    if (categoryParam) {
-      if (['Rising', 'Leading', 'QCC-Rising', 'QCC-Leading', 'SS', 'ALL'].includes(categoryParam)) {
-        setActiveCategoryFilter(categoryParam);
-      }
     }
   }, []);
 

@@ -202,6 +202,18 @@ export async function saveJudgeScore(
   await setDoc(doc(db, SCORES_COL, docId), scoreData);
 }
 
+export async function deleteJudgeScore(
+  participantId: string,
+  judgeId: 1 | 2 | 3
+) {
+  const docId = `${participantId}_juri${judgeId}`;
+  try {
+    await deleteDoc(doc(db, SCORES_COL, docId));
+  } catch (err) {
+    console.warn("Notice: deleteJudgeScore error:", err);
+  }
+}
+
 export async function addParticipant(p: Omit<Participant, 'id'>) {
   const ref = await addDoc(collection(db, PARTICIPANTS_COL), {
     ...p,
@@ -305,9 +317,9 @@ export function computeLeaderboard(
     // 2. Judge Scores (Performance 4% & Perbaikan Materi 4%)
     const pScores = scores.filter((s) => s.participantId === participant.id);
 
-    const j1 = pScores.find((s) => s.judgeId === 1);
-    const j2 = pScores.find((s) => s.judgeId === 2);
-    const j3 = pScores.find((s) => s.judgeId === 3);
+    const j1 = pScores.find((s) => Number(s.judgeId) === 1);
+    const j2 = pScores.find((s) => Number(s.judgeId) === 2);
+    const j3 = pScores.find((s) => Number(s.judgeId) === 3);
 
     const juri1Score = j1 ? calculateSingleJudgeTotal(j1.criteriaScores) : null;
     const juri2Score = j2 ? calculateSingleJudgeTotal(j2.criteriaScores) : null;
@@ -317,6 +329,11 @@ export function computeLeaderboard(
     if (j1) activeJudges.push(j1);
     if (j2) activeJudges.push(j2);
     if (j3) activeJudges.push(j3);
+
+    // Fallback if slot matching didn't catch pScores items
+    if (activeJudges.length === 0 && pScores.length > 0) {
+      activeJudges.push(...pScores);
+    }
 
     let avgPerformance: number | null = null;
     let performanceContrib = 0;

@@ -81,38 +81,66 @@ app.get("/api/image-proxy", async (req: any, res: any) => {
 app.post("/api/read-sheets", async (req: any, res: any) => {
   try {
     const { spreadsheetId, sheetNames, columns } = req.body;
-    if (!spreadsheetId || !sheetNames || !Array.isArray(sheetNames)) {
-      return res.status(400).json({ error: "Missing spreadsheetId or sheetNames array" });
+    if (!spreadsheetId) {
+      return res.status(400).json({ error: "Missing spreadsheetId" });
+    }
+
+    const authClient = getGoogleAuth();
+    const sheets = google.sheets({ version: 'v4', auth: authClient });
+
+    // 1. Get actual sheet titles from spreadsheet metadata
+    let actualSheets: string[] = [];
+    try {
+      const meta = await sheets.spreadsheets.get({ spreadsheetId });
+      actualSheets = (meta.data.sheets || [])
+        .map(s => s.properties?.title)
+        .filter((t): t is string => !!t);
+    } catch (metaErr: any) {
+      console.warn("Could not fetch spreadsheet metadata, falling back to requested sheetNames:", metaErr.message);
+    }
+
+    // Determine target sheet names to fetch
+    let targetSheetNames: string[] = [];
+    if (Array.isArray(sheetNames) && sheetNames.length > 0) {
+      for (const requestedName of sheetNames) {
+        if (!requestedName || !requestedName.trim()) continue;
+        const reqTrim = requestedName.trim().toLowerCase();
+        // Match with actual sheet title if possible
+        const foundActual = actualSheets.find(a => a.trim().toLowerCase() === reqTrim);
+        if (foundActual) {
+          if (!targetSheetNames.includes(foundActual)) targetSheetNames.push(foundActual);
+        } else {
+          // If not in metadata or metadata failed, use as is
+          if (!targetSheetNames.includes(requestedName)) targetSheetNames.push(requestedName);
+        }
+      }
+    }
+
+    // Fallback if no target sheet names found
+    if (targetSheetNames.length === 0) {
+      targetSheetNames = actualSheets.length > 0 ? actualSheets : ['Sheet1'];
     }
 
     // Helper to convert Column Letter (e.g. 'A', 'B', 'Z', 'AA') to 0-based index
-    const colToIndex = (col: string | undefined, defaultIdx: number): number => {
-      if (!col || typeof col !== 'string') return defaultIdx;
+    const colToIndex = (col: string | undefined, fallbackIdx: number): number => {
+      if (!col || typeof col !== 'string') return fallbackIdx;
       const clean = col.trim().toUpperCase();
-      if (!clean) return defaultIdx;
+      if (!clean) return fallbackIdx;
       let result = 0;
       for (let i = 0; i < clean.length; i++) {
         const code = clean.charCodeAt(i);
         if (code >= 65 && code <= 90) {
           result = result * 26 + (code - 64);
         } else {
-          return defaultIdx; // Non-alphabetic fallback
+          return fallbackIdx;
         }
       }
       return Math.max(0, result - 1);
     };
 
-    const teamCodeIdx = colToIndex(columns?.colTeamCode, 0);       // Default 'A' = 0
-    const teamNameIdx = colToIndex(columns?.colTeamName, 1);       // Default 'B' = 1
-    const perbaikanIdx = colToIndex(columns?.colPerbaikanMateri, 3); // Default 'D' = 3
-    const performanceIdx = colToIndex(columns?.colPerformance, 4);   // Default 'E' = 4
-
-    const authClient = getGoogleAuth();
-    const sheets = google.sheets({ version: 'v4', auth: authClient });
-
     const results: Record<string, any[]> = {};
 
-    for (const sheetName of sheetNames) {
+    for (const sheetName of targetSheetNames) {
       try {
         const getRes = await sheets.spreadsheets.values.get({
           spreadsheetId,
@@ -120,29 +148,100 @@ app.post("/api/read-sheets", async (req: any, res: any) => {
         });
         
         const rows = getRes.data.values || [];
-        const parsedRows = rows.map(row => {
+        if (rows.length === 0) {
+          results[sheetName] = [];
+          continue;
+        }
+
+        // Auto-detect header row & column indices in first 10 rows
+        let autoCodeIdx: number | null = null;
+        let autoNameIdx: number | null = null;
+        let autoPrelimIdx: number | null = null;
+        let autoPerbaikanIdx: number | null = null;
+        let autoPerfIdx: number | null = null;
+        let headerRowIndex = -1;
+
+        for (let r = 0; r < Math.min(10, rows.length); r++) {
+          const row = rows[r];
+          if (!Array.isArray(row)) continue;
+          
+          row.forEach((cell, idx) => {
+            if (!cell) return;
+            const str = cell.toString().toLowerCase().trim();
+            if (autoCodeIdx === null && (str === 'kode tim' || str === 'kode' || str === 'team code' || str === 'kode_tim')) {
+              autoCodeIdx = idx;
+              headerRowIndex = r;
+            }
+            if (autoNameIdx === null && (str === 'teams' || str === 'team' || str === 'nama tim' || str === 'nama team' || str === 'peserta')) {
+              autoNameIdx = idx;
+              headerRowIndex = r;
+            }
+            if (autoPrelimIdx === null && (str.includes('penyisihan') || str.includes('preliminary'))) {
+              autoPrelimIdx = idx;
+              headerRowIndex = r;
+            }
+            if (autoPerbaikanIdx === null && (str.includes('perbaikan') || str.includes('materi'))) {
+              autoPerbaikanIdx = idx;
+              headerRowIndex = r;
+            }
+            if (autoPerfIdx === null && (str.includes('performance') || str.includes('performa'))) {
+              autoPerfIdx = idx;
+              headerRowIndex = r;
+            }
+          });
+          if (autoCodeIdx !== null || autoNameIdx !== null) break;
+        }
+
+        // Final column indices: manual override -> detected header -> default
+        // Default mapping: B (1) = Kode Tim, C (2) = Team Name, D (3) = Penyisihan, E (4) = Perbaikan Materi, F (5) = Performance
+        const teamCodeIdx = columns?.colTeamCode ? colToIndex(columns.colTeamCode, 1) : (autoCodeIdx ?? 1);
+        const teamNameIdx = columns?.colTeamName ? colToIndex(columns.colTeamName, 2) : (autoNameIdx ?? 2);
+        const preliminaryIdx = columns?.colPreliminaryScore ? colToIndex(columns.colPreliminaryScore, 3) : (autoPrelimIdx ?? 3);
+        const perbaikanIdx = columns?.colPerbaikanMateri ? colToIndex(columns.colPerbaikanMateri, 4) : (autoPerbaikanIdx ?? 4);
+        const performanceIdx = columns?.colPerformance ? colToIndex(columns.colPerformance, 5) : (autoPerfIdx ?? 5);
+
+        const parsedRows = rows.slice(headerRowIndex >= 0 ? headerRowIndex + 1 : 0).map(row => {
+          if (!Array.isArray(row)) return null;
+
           let perbaikanMateri = 0;
           let performance = 0;
+          let preliminaryScore = 0;
           
-          if (row[perbaikanIdx]) {
-            const val = row[perbaikanIdx].toString().replace(',', '.');
+          if (row[preliminaryIdx] !== undefined && row[preliminaryIdx] !== null) {
+            const val = row[preliminaryIdx].toString().replace(',', '.').trim();
+            preliminaryScore = parseFloat(val) || 0;
+          }
+
+          if (row[perbaikanIdx] !== undefined && row[perbaikanIdx] !== null) {
+            const val = row[perbaikanIdx].toString().replace(',', '.').trim();
             perbaikanMateri = parseFloat(val) || 0;
           }
-          if (row[performanceIdx]) {
-            const val = row[performanceIdx].toString().replace(',', '.');
+
+          if (row[performanceIdx] !== undefined && row[performanceIdx] !== null) {
+            const val = row[performanceIdx].toString().replace(',', '.').trim();
             performance = parseFloat(val) || 0;
           }
 
-          const rawTeamCode = row[teamCodeIdx] ? row[teamCodeIdx].toString().trim() : "";
-          const rawTeamName = row[teamNameIdx] ? row[teamNameIdx].toString().trim() : "";
+          const rawTeamCode = row[teamCodeIdx] !== undefined && row[teamCodeIdx] !== null ? row[teamCodeIdx].toString().trim() : "";
+          const rawTeamName = row[teamNameIdx] !== undefined && row[teamNameIdx] !== null ? row[teamNameIdx].toString().trim() : "";
 
           return {
             teamCode: rawTeamCode,
             teamName: rawTeamName,
+            preliminaryScore,
             perbaikanMateri,
             performance
           };
-        }).filter(r => r.teamCode && r.teamCode.toLowerCase() !== 'kategori' && r.teamCode.toLowerCase() !== 'kode tim' && r.teamCode.toLowerCase() !== 'id' && r.teamCode.toLowerCase() !== 'no'); 
+        }).filter((r): r is NonNullable<typeof r> => {
+          if (!r) return false;
+          if (!r.teamCode && !r.teamName) return false;
+          const codeLower = r.teamCode.toLowerCase();
+          const nameLower = r.teamName.toLowerCase();
+          const headers = ['kategori', 'kode tim', 'nama tim', 'teams', 'id', 'no', 'peserta', 'tim', 'pos', 'rank', 'rising', 'leading'];
+          if (headers.includes(codeLower) || headers.includes(nameLower)) return false;
+          return true;
+        }); 
+
         results[sheetName] = parsedRows;
       } catch (err: any) {
         console.error(`Error reading sheet ${sheetName}:`, err.message);
