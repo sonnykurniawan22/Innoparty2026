@@ -167,12 +167,12 @@ export default function App() {
   // ----------------------------------------------------------------------
   if (showAdminLogin) {
     return (
-      <div className="min-h-screen font-sans flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1A8FE3 0%, #0072CE 60%, #005AB5 100%)' }}>
+      <div className="min-h-screen font-sans flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1F5C 0%, #0B3D9B 60%, #083080 100%)' }}>
         {/* Banner-inspired decorative ribbons */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20" style={{ background: '#E51426' }} />
-          <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-15" style={{ background: '#80C8FF' }} />
-          <div className="absolute top-1/2 -left-12 w-48 h-48 rounded-full opacity-10" style={{ background: '#004FA3' }} />
+          <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-15" style={{ background: '#00AEEF' }} />
+          <div className="absolute top-1/2 -left-12 w-48 h-48 rounded-full opacity-10" style={{ background: '#8DC63F' }} />
         </div>
         <motion.div
           key="adminLogin"
@@ -187,10 +187,10 @@ export default function App() {
             <div className="w-24 h-24 mx-auto flex items-center justify-center ">
               <img src="/mascot-hero.png" alt="Innoparty Mascot" className="w-full h-full object-contain" />
             </div>
-            <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border" style={{ background: '#EBF5FF', color: '#0072CE', borderColor: '#0072CE' }}>
+            <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border" style={{ background: '#EBF5FF', color: '#0B3D9B', borderColor: '#00AEEF' }}>
               INNOPARTY 2026 • PORTAL UTAMA
             </span>
-            <h2 className="text-2xl font-black uppercase tracking-tight font-display" style={{ color: '#004FA3' }}>
+            <h2 className="text-2xl font-black uppercase tracking-tight font-display" style={{ color: '#0A1F5C' }}>
               LOGIN ADMINISTRATOR
             </h2>
             <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed">
@@ -200,7 +200,7 @@ export default function App() {
 
           <form onSubmit={handleAdminLogin} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-black uppercase tracking-wider font-mono" style={{ color: '#0072CE' }}>
+              <label className="block text-xs font-black uppercase tracking-wider font-mono" style={{ color: '#0B3D9B' }}>
                 Kata Sandi Admin / Panitia
               </label>
               <input
@@ -208,9 +208,9 @@ export default function App() {
                 value={adminPasswordInput}
                 onChange={(e) => setAdminPasswordInput(e.target.value)}
                 placeholder="Masukkan kata sandi..."
-                className="w-full px-4 py-3.5 rounded-2xl border-2 bg-slate-50 focus:bg-white outline-none transition-all font-bold text-slate-900 text-sm" style={{ borderColor: '#0072CE' }}
-                onFocus={e => (e.currentTarget.style.borderColor = '#0072CE', e.currentTarget.style.boxShadow = '0 0 0 4px rgba(0,114,206,0.15)')}
-                onBlur={e => (e.currentTarget.style.borderColor = '#0072CE', e.currentTarget.style.boxShadow = 'none')}
+                className="w-full px-4 py-3.5 rounded-2xl border-2 bg-slate-50 focus:bg-white outline-none transition-all font-bold text-slate-900 text-sm" style={{ borderColor: '#00AEEF' }}
+                onFocus={e => (e.currentTarget.style.borderColor = '#0B3D9B', e.currentTarget.style.boxShadow = '0 0 0 4px rgba(11,61,155,0.10)')}
+                onBlur={e => (e.currentTarget.style.borderColor = '#00AEEF', e.currentTarget.style.boxShadow = 'none')}
                 autoFocus
               />
             </div>
@@ -355,7 +355,7 @@ export default function App() {
         <div className="absolute top-0 left-0 right-0 h-[2px] wc-vibrant-line" />
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="font-bold text-slate-800 flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#0072CE]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0B47A4]" />
             <span className="font-display tracking-tight">Innoparty 2026 • Idea Innovation Impact</span>
           </div>
           <div className="text-slate-400 font-mono text-[11px]">

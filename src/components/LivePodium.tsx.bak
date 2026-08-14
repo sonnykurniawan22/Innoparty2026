@@ -64,7 +64,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
 
         {/* Header Section with Integrated Mascot Branding */}
-        <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4" style={{ background: 'linear-gradient(135deg, #1A8FE3 0%, #0072CE 100%)' }}>
+        <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4" style={{ background: 'linear-gradient(135deg, #0B3D9B 0%, #0A2A7A 100%)' }}>
           <div className="flex items-center gap-3.5">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -87,8 +87,8 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
             <button
               onClick={() => setActiveCategoryFilter('QCC-Rising')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${activeCategoryFilter === 'QCC-Rising' || activeCategoryFilter === 'Rising'
-                ? 'bg-[#E51426] text-white shadow-md shadow-[#E51426]/30 font-black'
-                : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#E51426] text-white shadow-md shadow-[#E51426]/30 font-black'
+                  : 'text-slate-500 hover:text-slate-900'
                 }`}
             >
               <Star className="w-3.5 h-3.5 fill-current" />
@@ -97,8 +97,8 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
             <button
               onClick={() => setActiveCategoryFilter('QCC-Leading')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${activeCategoryFilter === 'QCC-Leading' || activeCategoryFilter === 'Leading'
-                ? 'bg-[#E51426] text-white shadow-md shadow-[#E51426]/30 font-black'
-                : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#E51426] text-white shadow-md shadow-[#E51426]/30 font-black'
+                  : 'text-slate-500 hover:text-slate-900'
                 }`}
             >
               <Flame className="w-3.5 h-3.5 fill-current" />
@@ -107,8 +107,8 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
             <button
               onClick={() => setActiveCategoryFilter('SS')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${activeCategoryFilter === 'SS'
-                ? 'bg-[#E51426] text-white shadow-md shadow-[#E51426]/30 font-black'
-                : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#E51426] text-white shadow-md shadow-[#E51426]/30 font-black'
+                  : 'text-slate-500 hover:text-slate-900'
                 }`}
             >
               <Sparkles className="w-3.5 h-3.5 fill-current" />
@@ -120,7 +120,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
         {/* Podium Section */}
         {rankedData.length > 0 && (
           /* ======= WORLD CUP THEMED PODIUM STAGE ======= */
-          <div className="p-6 md:p-10 relative overflow-hidden rounded-3xl mt-4 shadow-2xl" style={{ background: 'linear-gradient(135deg, #1A8FE3 0%, #0072CE 50%, #004FA3 100%)' }}>
+          <div className="p-6 md:p-10 relative overflow-hidden rounded-3xl mt-4 shadow-2xl" style={{ background: 'linear-gradient(135deg, #0B3D9B 0%, #0A2A7A 50%, #0E1F5B 100%)' }}>
 
             {/* Stadium Spotlight Rays — WC atmosphere */}
             <div className="absolute inset-0 pointer-events-none" style={{
@@ -129,9 +129,9 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
             }} />
 
             {/* Festive radial glow blurs */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-48 rounded-full blur-3xl opacity-40 pointer-events-none" style={{ background: '#C9A84C' }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-48 rounded-full blur-3xl opacity-30 pointer-events-none" style={{ background: '#C9A84C' }} />
             <div className="absolute bottom-0 right-0 w-96 h-72 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ background: '#E51426' }} />
-            <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ background: '#0088D4' }} />
+            <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ background: '#00AEEF' }} />
             <div className="absolute top-1/3 left-1/4 w-48 h-48 rounded-full blur-3xl opacity-10 pointer-events-none" style={{ background: '#8DC63F' }} />
 
             {/* Floating Football Decorations ⚽ */}
@@ -165,7 +165,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
             <div className="flex flex-col md:flex-row justify-center items-end gap-12 md:gap-8 h-auto md:h-[480px] pt-16 md:pt-24 pb-8 relative z-20">
 
               {/* Runner Up (Juara 2 - Silver) */}
-              <div className="podium-card w-full md:w-[30%] rounded-2xl flex flex-col items-center relative pb-6 pt-14 order-2 md:order-1 h-auto md:h-[85%] z-10 mt-12 md:mt-0" style={{ background: 'rgba(255,255,255,0.18)', border: '2px solid rgba(255,255,255,0.55)', backdropFilter: 'blur(20px)' }}>
+              <div className="podium-card w-full md:w-[30%] rounded-2xl flex flex-col items-center relative pb-6 pt-14 order-2 md:order-1 h-auto md:h-[85%] z-10 mt-12 md:mt-0" style={{ background: 'rgba(255,255,255,0.10)', border: '2px solid rgba(148,163,184,0.60)', backdropFilter: 'blur(16px)' }}>
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center shadow-md relative overflow-hidden" style={{ background: 'rgba(148,163,184,0.15)', ring: '2px solid rgba(148,163,184,0.4)' }}>
                     <img className="w-full h-full object-cover" src={getProxyImageUrl(rank2?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Ul03BhQkZaAwqEsCbO1UmQ_xmcXp5B8i")} referrerPolicy="no-referrer" alt="Juara 2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -178,19 +178,19 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                 {rank2 ? (
                   <>
                     <div className="px-4 text-center mt-4 flex flex-col items-center w-full">
-                      <div className="px-3.5 py-1 rounded-full text-[10px] font-black mb-2 uppercase tracking-widest font-mono" style={{ background: 'rgba(255,255,255,0.25)', color: '#FFFFFF', border: '1px solid rgba(255,255,255,0.45)' }}>
+                      <div className="px-3.5 py-1 rounded-full text-[10px] font-black mb-2 uppercase tracking-widest font-mono" style={{ background: 'rgba(148,163,184,0.25)', color: '#CBD5E1', border: '1px solid rgba(148,163,184,0.35)' }}>
                         RUNNER UP (JUARA 2)
                       </div>
-                      <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-md mb-2 tracking-wider uppercase font-mono" style={{ background: 'rgba(255,255,255,0.15)', color: '#E2E8F0', border: '1px solid rgba(255,255,255,0.30)' }}>{getCategoryBadge(rank2.participant)}</span>
+                      <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-md mb-2 tracking-wider uppercase font-mono" style={{ background: 'rgba(255,255,255,0.08)', color: '#94A3B8', border: '1px solid rgba(148,163,184,0.25)' }}>{getCategoryBadge(rank2.participant)}</span>
                       <h3 className="text-headline-md font-bold mt-1 mb-4 text-center font-display" style={{ color: '#F1F5F9' }}>{rank2.participant.name}</h3>
                     </div>
                     <div className="w-full mt-auto pt-5 text-center rounded-b-2xl flex flex-col justify-center min-h-[80px]" style={{ borderTop: '1px solid rgba(148,163,184,0.2)', background: 'rgba(255,255,255,0.05)' }}>
-                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1 font-mono" style={{ color: '#BFD9FF' }}>Total Skor</p>
-                      <p className="text-headline-xl font-black font-display" style={{ color: '#FFFFFF', textShadow: '0 0 12px rgba(255,255,255,0.3)' }}>{rank2.calculatedTotal}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1 font-mono" style={{ color: '#94A3B8' }}>Total Skor</p>
+                      <p className="text-headline-xl font-black font-display" style={{ color: '#E2E8F0' }}>{rank2.calculatedTotal}</p>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm mt-6 font-medium" style={{ color: '#BFD9FF' }}>Belum Ada Juara 2</div>
+                  <div className="flex-1 flex items-center justify-center text-sm mt-6 font-medium" style={{ color: '#64748B' }}>Belum Ada Juara 2</div>
                 )}
               </div>
 
@@ -236,12 +236,12 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm mt-10 font-medium" style={{ color: '#BFD9FF' }}>Belum Ada Juara 1</div>
+                  <div className="flex-1 flex items-center justify-center text-sm mt-10 font-medium" style={{ color: '#94A3B8' }}>Belum Ada Juara 1</div>
                 )}
               </div>
 
               {/* 3rd Place (Juara 3 - Bronze) */}
-              <div className="podium-card w-full md:w-[30%] rounded-2xl flex flex-col items-center relative pb-6 pt-14 order-3 h-auto md:h-[75%] z-10 mt-12 md:mt-0" style={{ background: 'rgba(255,255,255,0.18)', border: '2px solid rgba(205,127,50,0.65)', backdropFilter: 'blur(20px)' }}>
+              <div className="podium-card w-full md:w-[30%] rounded-2xl flex flex-col items-center relative pb-6 pt-14 order-3 h-auto md:h-[75%] z-10 mt-12 md:mt-0" style={{ background: 'rgba(255,255,255,0.10)', border: '2px solid rgba(205,127,50,0.45)', backdropFilter: 'blur(16px)' }}>
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
                   <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center shadow-md relative overflow-hidden" style={{ background: 'rgba(205,127,50,0.12)' }}>
                     <img className="w-full h-full object-cover" src={getProxyImageUrl(rank3?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1HQ2l_Uy0ymzlbfNCYZojRqLmmZLUXXZM")} referrerPolicy="no-referrer" alt="Juara 3" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -257,16 +257,16 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                       <div className="px-3.5 py-1 rounded-full text-[10px] font-black mb-2 uppercase tracking-widest font-mono" style={{ background: 'rgba(205,127,50,0.20)', color: '#E8A060', border: '1px solid rgba(205,127,50,0.35)' }}>
                         3RD PLACE (JUARA 3)
                       </div>
-                      <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-md mb-2 tracking-wider border uppercase font-mono" style={{ background: 'rgba(255,255,255,0.15)', color: '#E2E8F0', borderColor: 'rgba(205,127,50,0.45)' }}>{getCategoryBadge(rank3.participant)}</span>
+                      <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-md mb-2 tracking-wider border uppercase font-mono" style={{ background: 'rgba(255,255,255,0.07)', color: '#94A3B8', borderColor: 'rgba(205,127,50,0.25)' }}>{getCategoryBadge(rank3.participant)}</span>
                       <h3 className="text-headline-md font-bold mt-1 mb-4 text-center font-display" style={{ color: '#F1F5F9' }}>{rank3.participant.name}</h3>
                     </div>
                     <div className="w-full mt-auto pt-5 text-center rounded-b-2xl flex flex-col justify-center min-h-[80px]" style={{ borderTop: '1px solid rgba(205,127,50,0.2)', background: 'rgba(255,255,255,0.05)' }}>
-                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1 font-mono" style={{ color: '#F0B970' }}>Total Skor</p>
-                      <p className="text-headline-xl font-black font-display" style={{ color: '#FFFFFF', textShadow: '0 0 12px rgba(255,255,255,0.3)' }}>{rank3.calculatedTotal}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest mb-1 font-mono" style={{ color: '#CD7F32' }}>Total Skor</p>
+                      <p className="text-headline-xl font-black font-display" style={{ color: '#E2E8F0' }}>{rank3.calculatedTotal}</p>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-sm mt-6 font-medium" style={{ color: '#BFD9FF' }}>Belum Ada Juara 3</div>
+                  <div className="flex-1 flex items-center justify-center text-sm mt-6 font-medium" style={{ color: '#64748B' }}>Belum Ada Juara 3</div>
                 )}
               </div>
             </div>
@@ -318,8 +318,8 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                         </td>
                         <td className="py-4 px-4 text-center">
                           <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border font-mono ${item.participant.levelCategory === 'Leading'
-                            ? 'bg-slate-900 text-white border-slate-900'
-                            : 'bg-[#F0F8FF] text-[#063B8B] border-[#B3D4FF]'
+                              ? 'bg-slate-900 text-white border-slate-900'
+                              : 'bg-[#F0F8FF] text-[#063B8B] border-[#B3D4FF]'
                             }`}>
                             {item.participant.levelCategory || item.participant.category || item.participant.stream}
                           </span>
@@ -354,8 +354,8 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                         </div>
                       </div>
                       <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shrink-0 font-mono ${item.participant.levelCategory === 'Leading'
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-[#F0F8FF] text-[#063B8B]'
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-[#F0F8FF] text-[#063B8B]'
                         }`}>
                         {item.participant.levelCategory || item.participant.category}
                       </span>

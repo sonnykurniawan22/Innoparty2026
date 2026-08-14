@@ -171,34 +171,29 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
       </AnimatePresence>
 
       {/* Auto-detected Category Banner */}
-      <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-[#BFDBFE]/30 shadow-sm">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-[#2563EB] text-[#1A1A1A] flex items-center justify-center font-black shrink-0">
-            <Award className="w-5 h-5" />
+      <div className="bg-white p-4 sm:p-5 rounded-3xl flex items-center justify-between border-b-4 border-[#E51426] shadow-xl relative overflow-hidden mb-6">
+        {/* Subtle Background Pattern/Gradient */}
+        <div className="absolute right-0 top-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        
+        <div className="flex items-center space-x-4 sm:space-x-6 relative z-10">
+          <div className="w-16 sm:w-20 h-16 sm:h-20 shrink-0 relative flex items-center justify-center">
+            <img src="/mascot-kick.png" alt="Mascot" className="w-full h-full object-contain drop-shadow-lg scale-125 origin-bottom" />
           </div>
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#2563EB] block">
+          <div className="pt-1">
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-[#E51426] block mb-1">
               KATEGORI PENILAIAN PUBLIC VOTE
             </span>
-            <h3 className="font-black text-sm sm:text-base uppercase tracking-wider text-white">
+            <h3 className="font-black text-2xl sm:text-3xl uppercase tracking-tight text-[#0B47A4] leading-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
               {activeCategoryFilter === 'QCC-Rising' && 'QCC RISING CLASS'}
               {activeCategoryFilter === 'QCC-Leading' && 'QCC LEADING CLASS'}
               {activeCategoryFilter === 'SS' && 'SUGGESTION SYSTEM (SS)'}
             </h3>
           </div>
         </div>
-
-        {/* Real-time Vote Progress */}
-        <div className="hidden sm:flex flex-col items-end">
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Partisipasi Kelompok</span>
-          <span className="text-sm font-black text-emerald-400">
-            {votedGroupsSet.size} / {OFFICIAL_VOTER_GROUPS.length} Suara Masuk
-          </span>
-        </div>
       </div>
 
       {/* MAIN FORM */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="bg-white border-t-4 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6" style={{ borderTopColor: '#0B3D9B' }}>
         
         {/* Banner jika perangkat ini sudah vote */}
         {myVote && (
@@ -238,14 +233,11 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
 
           {/* 1. SELECTION KELOMPOK PEMILIH (Anti-Duplikasi & Anti-Incognito) */}
           <div className="space-y-3 pb-4 border-b border-slate-100">
-            <label className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-800">
+            <label className="flex items-center text-xs font-black uppercase tracking-wider" style={{ color: '#0A1F5C' }}>
               <span className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#2563EB]" />
+                <Users className="w-4 h-4" style={{ color: '#0B3D9B' }} />
                 <span>Pilih Kelompok Pemilih Anda</span>
-                <span className="text-[#DC2626] font-black text-sm">*</span>
-              </span>
-              <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                {votedGroupsSet.size} dari {OFFICIAL_VOTER_GROUPS.length} Kelompok Telah Memilih
+                <span className="font-black text-sm" style={{ color: '#E51426' }}>*</span>
               </span>
             </label>
 
@@ -255,7 +247,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                 value={selectedGroup}
                 onChange={(e) => setSelectedGroup(e.target.value)}
                 disabled={allGroupsVoted}
-                className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-300 bg-white font-bold text-slate-900 text-sm focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 outline-none transition-all shadow-sm cursor-pointer disabled:bg-slate-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3.5 rounded-2xl border-2 bg-white font-bold text-slate-900 text-sm outline-none transition-all shadow-sm cursor-pointer disabled:bg-slate-50 disabled:cursor-not-allowed" style={{ borderColor: '#00AEEF' }}
                 required
               >
                 <option value="">-- Pilih Kelompok Resmi (11 Kelompok) --</option>
@@ -294,9 +286,10 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                         isVoted
                           ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
                           : isSelected
-                          ? 'bg-[#EFF6FF] border-[#2563EB] text-[#1E40AF] shadow-sm ring-1 ring-[#BFDBFE]'
-                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 cursor-pointer'
+                          ? 'text-white shadow-md'
+                          : 'bg-white text-slate-700 cursor-pointer hover:border-[#00AEEF]'
                       }`}
+                      style={isSelected && !isVoted ? { background: '#0B3D9B', borderColor: '#0B3D9B' } : isVoted ? {} : { borderColor: '#E2E8F0' }}
                     >
                       <span className="truncate">{grp}</span>
                       {isVoted ? (
@@ -304,7 +297,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                           Sudah
                         </span>
                       ) : isSelected ? (
-                        <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-white shrink-0" />
                       ) : (
                         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Tersedia" />
                       )}
@@ -317,7 +310,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
           
           {/* 2. PILIH TIM INOVASI */}
           <div className="space-y-3">
-            <span className="text-xs font-black text-slate-700 uppercase tracking-wider block">
+            <span className="text-xs font-black uppercase tracking-wider block" style={{ color: '#0B3D9B' }}>
               Pilih 1 Tim Inovasi yang Didukung ({categoryParticipants.length} Tim Tersedia)
             </span>
 
@@ -333,16 +326,18 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                     <div
                       key={p.id}
                       onClick={() => setSelectedParticipantId(p.id)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between gap-4 ${
+                      className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4 ${
                         isTeamSelected
-                          ? 'border-[#2563EB] bg-[#EFF6FF] shadow-sm ring-1 ring-[#BFDBFE]'
-                          : 'border-slate-200 bg-white hover:bg-slate-50'
+                          ? 'shadow-lg'
+                          : 'border-slate-200 bg-white hover:border-[#00AEEF] hover:bg-[#F0FAFF]'
                       }`}
+                      style={isTeamSelected ? { borderColor: '#E51426', background: '#FFF5F5' } : {}}
                     >
                       <div className="flex items-center space-x-3.5">
-                        <div className={`w-11 h-11 rounded-2xl font-black text-sm flex items-center justify-center shrink-0 border ${
-                          isTeamSelected ? 'bg-[#1A1A1A] text-[#2563EB] border-[#1A1A1A]' : 'bg-slate-100 text-slate-700 border-slate-200'
-                        }`}>
+                        <div className={`w-11 h-11 rounded-2xl font-black text-sm flex items-center justify-center shrink-0 border-2 overflow-hidden ${
+                          isTeamSelected ? '' : 'bg-slate-100 text-slate-700 border-slate-200'
+                        }`}
+                        style={isTeamSelected ? { borderColor: '#E51426', background: '#FFF0F0', color: '#E51426' } : {}}>
                           {p.photoUrl ? (
                             <img src={getProxyImageUrl(p.photoUrl)} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover rounded-2xl" />
                           ) : (
@@ -366,8 +361,9 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
 
                       <div className="shrink-0">
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isTeamSelected ? 'border-[#1A1A1A] bg-[#1A1A1A] text-[#2563EB]' : 'border-slate-300 bg-white'
-                        }`}>
+                          isTeamSelected ? '' : 'border-slate-300 bg-white'
+                        }`}
+                        style={isTeamSelected ? { borderColor: '#E51426', background: '#E51426', color: '#FFFFFF' } : {}}>
                           {isTeamSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                         </div>
                       </div>
@@ -382,7 +378,10 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
           <button
             type="submit"
             disabled={submitting || !selectedParticipantId || !selectedGroup || votedGroupsSet.has(selectedGroup) || allGroupsVoted}
-            className="w-full py-4 bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-50 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-lg shadow-[#2563EB]/30 transition-all flex items-center justify-center space-x-2 active:scale-98 cursor-pointer"
+            className="w-full py-4 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl transition-all flex items-center justify-center space-x-2 active:scale-[0.98] cursor-pointer disabled:opacity-40"
+            style={{ background: '#E51426' }}
+            onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#C41121'; }}
+            onMouseLeave={e => (e.currentTarget.style.background = '#E51426')}
           >
             <Send className="w-4 h-4" />
             <span>

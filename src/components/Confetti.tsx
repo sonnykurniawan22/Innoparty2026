@@ -4,7 +4,7 @@ const Confetti: React.FC = () => {
   const [pieces, setPieces] = useState<{ id: number; left: string; delay: string; duration: string; color: string }[]>([]);
 
   useEffect(() => {
-    const colors = ['#2563EB', '#BFDBFE', '#2563EB', '#10B981', '#EF4444', '#8B5CF6'];
+    const colors = ['#0B47A4', '#B3D4FF', '#0B47A4', '#10B981', '#EF4444', '#8B5CF6'];
     const newPieces = Array.from({ length: 60 }).map((_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,

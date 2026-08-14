@@ -1,36 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'FIFA26';
+  src: url('/fifa26.otf') format('opentype'),
+    url('/fifa26.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-wc: "FIFA26", "Outfit", ui-sans-serif, system-ui, sans-serif;
 
-  /* ===== Official FIFA World Cup 2026™ Core Identity ===== */
-  /* The official palette is: Black, White, Gold              */
-  --color-wc-gold: #C9A84C;
-  /* Championship Gold */
-  --color-wc-gold-light: #E8D48B;
-  /* Light Gold */
-  --color-wc-gold-dark: #A38A3A;
-  /* Dark Gold */
-  --color-wc-black: #1A1A1A;
-  /* Rich Black */
-  --color-wc-silver: #94A3B8;
-  /* Silver / Runner Up */
-  --color-wc-bronze: #CD7F32;
-  /* Bronze / 3rd Place */
+  /* ===== Tunas Honda Banner Palette ===== */
+  /* Extracted exactly from flat-banner-tunas.jpg  */
+  --color-brand-blue: #0B3D9B;
+  /* Deep Royal Blue — dominant BG */
+  --color-brand-red: #E51426;
+  /* Honda Red — primary CTA & active */
+  --color-brand-cyan: #00AEEF;
+  /* Sky Cyan — accent / badge */
+  --color-brand-lime: #8DC63F;
+  /* Lime Green — success / accent */
+  --color-brand-white: #FFFFFF;
+  /* Pure White */
+  --color-brand-dark: #0A1F5C;
+  /* Ultra-dark navy for text on light */
 
-  /* ===== Design Tokens ===== */
-  --color-primary: #1A1A1A;
-  --color-accent: #C9A84C;
+  /* ===== App-wide Design Tokens ===== */
+  --color-primary: #0B3D9B;
+  /* maps to brand-blue  */
+  --color-accent: #E51426;
+  /* maps to brand-red   */
+  --color-success: #8DC63F;
+  /* maps to brand-lime  */
+  --color-info: #00AEEF;
+  /* maps to brand-cyan  */
   --color-error: #DC2626;
+  /* standard danger     */
   --color-surface-bright: #FFFFFF;
-  --color-surface: #FAFBFC;
+  --color-surface: #F4F7FC;
+  /* very-light blue tint */
+
+  /* Legacy gold tokens kept to avoid breaking confetti/podium graphics */
+  --color-wc-gold: #C9A84C;
+  --color-wc-gold-light: #E8D48B;
+  --color-wc-gold-dark: #A38A3A;
+  --color-wc-black: #1A1A1A;
+  --color-wc-silver: #94A3B8;
+  --color-wc-bronze: #CD7F32;
 }
 
-/* ===== World Cup 2026 Gold Gradient ===== */
-.wc-gold-line {
-  background: linear-gradient(90deg, transparent 0%, #C9A84C 20%, #E8D48B 50%, #C9A84C 80%, transparent 100%);
+/* ===== Brand Accent Stripe (top of cards/navbar) ===== */
+/* Uses the exact 4-colour sweep from the banner ribbons  */
+.wc-vibrant-line {
+  background: linear-gradient(90deg,
+      #E51426 0%,
+      #00AEEF 35%,
+      #8DC63F 65%,
+      #E51426 100%);
 }
 
 /* ===== Podium Card Transitions ===== */
@@ -44,14 +75,15 @@
 }
 
 .champion-card {
-  box-shadow: 0px 8px 30px rgba(201, 168, 76, 0.18);
+  box-shadow: 0 0 0 2.5px #C9A84C, 0 8px 40px rgba(201, 168, 76, 0.45), 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
 .champion-card:hover {
-  box-shadow: 0px 14px 40px rgba(201, 168, 76, 0.25);
+  box-shadow: 0 0 0 2.5px #E8D48B, 0 12px 50px rgba(201, 168, 76, 0.65), 0 24px 70px rgba(0, 0, 0, 0.5);
+  transform: translateY(-6px);
 }
 
-/* ===== Mascot Animations (GIF-like) ===== */
+/* ===== Mascot Animations ===== */
 @keyframes mascotFloat {
 
   0%,
@@ -94,4 +126,21 @@
 
 .animate-mascot-wave {
   animation: mascotWave 3.5s ease-in-out infinite;
+}
+
+/* ===== WC2026 Ticker Marquee ===== */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ===== Navbar bottom accent ===== */
+.navbar-wc-stripe {
+  background: linear-gradient(90deg, #E51426 0%, #00AEEF 33%, #8DC63F 66%, #C9A84C 100%);
+  height: 3px;
 }
