@@ -269,7 +269,7 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 relative z-10">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 relative">
         <AnimatePresence mode="wait">
 
           {/* TAB 1: LIVE PODIUM SCOREBOARD */}
@@ -351,7 +351,7 @@ export default function App() {
       </main>
 
       {/* Footer with Elegant Gold Accent */}
-      <footer className="border-t border-slate-200/60 bg-white/90 backdrop-blur py-6 mt-16 text-center text-xs text-slate-500 relative z-10">
+      <footer className="border-t border-slate-200/60 bg-white/90 backdrop-blur py-6 mt-16 text-center text-xs text-slate-500 relative">
         <div className="absolute top-0 left-0 right-0 h-[2px] wc-vibrant-line" />
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="font-bold text-slate-800 flex items-center gap-2">

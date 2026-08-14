@@ -195,22 +195,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
       {/* MAIN FORM */}
       <div className="bg-white border-t-4 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6" style={{ borderTopColor: '#0B3D9B' }}>
         
-        {/* Banner jika perangkat ini sudah vote */}
-        {myVote && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 sm:p-5 flex items-start gap-3">
-            <div className="mt-0.5">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-emerald-900 uppercase tracking-tight">
-                Suara dari Kelompok "{myVote.voterGroup}" Telah Terkunci
-              </h4>
-              <p className="text-xs text-emerald-700 mt-1">
-                Kelompok <strong>{myVote.voterGroup}</strong> telah memberikan dukungan kepada tim <strong className="font-black text-emerald-900">{participants.find(p => p.id === myVote.participantId)?.name || 'Peserta'}</strong> pada kategori ini.
-              </p>
-            </div>
-          </div>
-        )}
+
 
         {/* Banner jika semua 11 kelompok sudah memilih */}
         {allGroupsVoted && !myVote && (
