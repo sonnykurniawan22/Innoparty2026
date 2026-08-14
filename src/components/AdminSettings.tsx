@@ -258,16 +258,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
             batchPromises.push(deleteJudgeScore(p.id, judgeId as 1 | 2 | 3));
           }
 
-          const updates: Partial<Participant> = {};
-          if (typeof row.preliminaryScore === 'number' && row.preliminaryScore >= 0 && row.preliminaryScore !== p.preliminaryScore) {
-            updatedPrelims++;
-            updates.preliminaryScore = row.preliminaryScore;
-          }
-          if (row.teamCode && (!p.teamCode || normalize(p.teamCode) !== rowCodeNorm)) {
-            updates.teamCode = row.teamCode;
-          }
-          if (Object.keys(updates).length > 0) {
-            batchPromises.push(updateParticipant(p.id, updates));
+          // Catatan: Nilai Penyisihan (90%) HANYA diambil dari Master Data Peserta
+          // Hanya update teamCode jika di database masih kosong
+          if (row.teamCode && !p.teamCode) {
+            batchPromises.push(updateParticipant(p.id, { teamCode: row.teamCode }));
           }
         } else {
           unmatchedRows.push(`${row.teamCode ? `[${row.teamCode}] ` : ''}${row.teamName || 'Tanpa Nama'}`);
@@ -276,7 +270,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
     }
     
     await Promise.allSettled(batchPromises);
-    return { syncedScores, updatedPrelims, matchedNames, unmatchedRows };
+    return { syncedScores, updatedPrelims: 0, matchedNames, unmatchedRows };
   };
 
   const handleSyncScores = async () => {
@@ -348,7 +342,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
       }
 
       setSyncReport({ matched: allMatched, unmatched: allUnmatched });
-      setSyncStatus(`Sinkronisasi selesai! (${totalSyncedScores} nilai juri tersimpan, ${totalUpdatedPrelims} nilai penyisihan terupdate)`);
+      setSyncStatus(`Sinkronisasi selesai! (${totalSyncedScores} data nilai juri tersimpan). Nilai Penyisihan (90%) tetap mengacu pada Master Data Peserta.`);
       setTimeout(() => setSyncStatus(''), 8000);
     } catch (err: any) {
       console.error(err);
@@ -548,7 +542,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               {/* QCC Columns */}
               <div className="pt-3 border-t border-slate-700/80">
                 <span className="text-[11px] font-bold text-slate-300 block mb-2">Pemetaan Kolom Spreadsheet QCC (Huruf Kolom):</span>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom ID / Kode</label>
                     <input 
@@ -572,18 +566,6 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       maxLength={3}
                     />
                     <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: C</span>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Penyisihan (90%)</label>
-                    <input 
-                      type="text" 
-                      value={colQccPreliminary} 
-                      onChange={(e) => setColQccPreliminary(e.target.value.toUpperCase())}
-                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-blue-400 focus:outline-none focus:border-blue-500 uppercase"
-                      placeholder="D"
-                      maxLength={3}
-                    />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Perbaikan (4%)</label>
@@ -659,7 +641,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
               {/* SS Columns */}
               <div className="pt-3 border-t border-slate-700/80">
                 <span className="text-[11px] font-bold text-slate-300 block mb-2">Pemetaan Kolom Spreadsheet SS (Huruf Kolom):</span>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Kolom ID / Kode</label>
                     <input 
@@ -683,18 +665,6 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({
                       maxLength={3}
                     />
                     <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: C</span>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Penyisihan (90%)</label>
-                    <input 
-                      type="text" 
-                      value={colSsPreliminary} 
-                      onChange={(e) => setColSsPreliminary(e.target.value.toUpperCase())}
-                      className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-center font-mono font-bold text-emerald-400 focus:outline-none focus:border-emerald-500 uppercase"
-                      placeholder="D"
-                      maxLength={3}
-                    />
-                    <span className="text-[9px] text-slate-400 block mt-0.5 text-center font-mono">Def: D</span>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-400 mb-1">Perbaikan (4%)</label>
