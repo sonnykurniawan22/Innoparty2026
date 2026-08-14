@@ -68,14 +68,14 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
           <div className="flex items-center gap-3.5">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FDF8EC] text-[#A38A3A] text-[9px] font-black uppercase tracking-widest font-mono border border-[#E8D48B]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C9A84C] animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#1E40AF] text-[9px] font-black uppercase tracking-widest font-mono border border-[#BFDBFE]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-pulse" />
                   Innoparty 2026 • Live Standings
                 </span>
               </div>
               <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight font-display flex items-center gap-2">
                 <span>Top 3 Podium Champions</span>
-                <span className="text-xs font-bold text-[#A38A3A] bg-[#FDF8EC] px-2 py-0.5 rounded-md border border-[#E8D48B] font-mono">
+                <span className="text-xs font-bold text-[#1E40AF] bg-[#EFF6FF] px-2 py-0.5 rounded-md border border-[#BFDBFE] font-mono">
                   {getCategoryTitle(activeCategoryFilter)}
                 </span>
               </h2>
@@ -124,20 +124,20 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
         {rankedData.length > 0 && (
           <div className="p-6 md:p-10 relative overflow-hidden bg-gradient-to-b from-white via-[#FDFBF5] to-white">
             {/* Subtle Warm Gold Decorative Blurs */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-[#C9A84C]/5 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#E8D48B]/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[#2563EB]/5 rounded-full blur-3xl -mr-24 -mt-24 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#BFDBFE]/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
             
             {/* Confetti Effect */}
             <Confetti />
 
             {/* Left Mascot (Framing the Podium - Top) */}
             <div className="hidden lg:block absolute top-4 left-6 w-36 h-36 z-30 pointer-events-none drop-shadow-xl hover:scale-110 transition-transform duration-500 origin-top">
-              <img src="/mascot-wave.png" alt="Mascot Wave" className="w-full h-full object-contain animate-mascot-wave" />
+              <img src="/mascot-kick.png" alt="Mascot Wave" className="w-full h-full object-contain animate-mascot-wave" />
             </div>
 
             {/* Right Mascot (Framing the Podium - Top) */}
             <div className="hidden lg:block absolute top-4 right-6 w-36 h-36 z-30 pointer-events-none drop-shadow-xl hover:scale-110 transition-transform duration-500 origin-top">
-              <img src="/mascot-champion.png" alt="Mascot Champion" className="w-full h-full object-contain animate-mascot-float" />
+              <img src="/mascot-kick.png" alt="Mascot Champion" className="w-full h-full object-contain animate-mascot-float -scale-x-100" />
             </div>
 
             <div className="flex flex-col md:flex-row justify-center items-end gap-12 md:gap-8 h-auto md:h-[480px] pt-16 md:pt-24 pb-8 relative z-20">
@@ -173,13 +173,13 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
               </div>
 
               {/* Champion (Juara 1 - Championship Gold 🏆) */}
-              <div className="podium-card champion-card w-full md:w-[35%] bg-white rounded-2xl border-2 border-[#C9A84C] ring-4 ring-[#C9A84C]/15 flex flex-col items-center relative pb-6 pt-16 order-1 md:order-2 h-auto md:h-full z-20 mt-16 md:mt-0">
+              <div className="podium-card champion-card w-full md:w-[35%] bg-white rounded-2xl border-2 border-[#2563EB] ring-4 ring-[#2563EB]/15 flex flex-col items-center relative pb-6 pt-16 order-1 md:order-2 h-auto md:h-full z-20 mt-16 md:mt-0">
                 
                 <div className="absolute -top-14 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
-                  <div className="w-28 h-28 rounded-full bg-[#FDF8EC] border-4 border-white flex items-center justify-center shadow-lg relative overflow-hidden ring-4 ring-[#C9A84C]/30">
+                  <div className="w-28 h-28 rounded-full bg-[#EFF6FF] border-4 border-white flex items-center justify-center shadow-lg relative overflow-hidden ring-4 ring-[#2563EB]/30">
                     <img className="w-full h-full object-cover scale-110" src={getProxyImageUrl(rank1?.participant.photoUrl || "https://drive.google.com/uc?export=view&id=1Nqk3jCqgImxHr2HfZb4NvWqofBO7N0AK")} referrerPolicy="no-referrer" alt="Juara 1" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
-                  <div className="absolute bottom-0 -right-2 w-9 h-9 bg-[#C9A84C] border-2 border-white rounded-full flex items-center justify-center shadow-md">
+                  <div className="absolute bottom-0 -right-2 w-9 h-9 bg-[#2563EB] border-2 border-white rounded-full flex items-center justify-center shadow-md">
                     <span className="text-sm font-black text-white font-mono">1</span>
                   </div>
                 </div>
@@ -187,15 +187,15 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                 {rank1 ? (
                   <>
                     <div className="px-4 text-center mt-4 flex flex-col items-center w-full">
-                      <div className="bg-[#C9A84C] text-white px-4 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 mb-2 shadow-sm uppercase tracking-widest font-mono">
+                      <div className="bg-[#2563EB] text-white px-4 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 mb-2 shadow-sm uppercase tracking-widest font-mono">
                         <Trophy className="w-4 h-4 fill-current" />
                         <span>CHAMPION (JUARA 1)</span>
                       </div>
-                      <span className="inline-block px-3 py-0.5 bg-[#FDF8EC] text-[#A38A3A] text-[11px] font-bold rounded-full mb-3 tracking-wider shadow-sm uppercase border border-[#E8D48B] font-mono">{getCategoryBadge(rank1.participant)}</span>
+                      <span className="inline-block px-3 py-0.5 bg-[#EFF6FF] text-[#1E40AF] text-[11px] font-bold rounded-full mb-3 tracking-wider shadow-sm uppercase border border-[#BFDBFE] font-mono">{getCategoryBadge(rank1.participant)}</span>
                       <h3 className="text-headline-lg font-bold text-slate-900 mb-4 text-center font-display">{rank1.participant.name}</h3>
                     </div>
-                    <div className="w-full mt-auto pt-6 border-t border-[#E8D48B]/60 bg-[#FDF8EC]/70 text-center rounded-b-2xl flex flex-col justify-center min-h-[100px]">
-                      <p className="text-[11px] font-bold text-[#A38A3A] uppercase tracking-widest mb-1 font-mono">Total Skor</p>
+                    <div className="w-full mt-auto pt-6 border-t border-[#BFDBFE]/60 bg-[#EFF6FF]/70 text-center rounded-b-2xl flex flex-col justify-center min-h-[100px]">
+                      <p className="text-[11px] font-bold text-[#1E40AF] uppercase tracking-widest mb-1 font-mono">Total Skor</p>
                       <p className="text-[42px] font-black text-slate-900 leading-none font-display">{rank1.calculatedTotal}</p>
                     </div>
                   </>
@@ -271,7 +271,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                           <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border font-mono ${
                             item.participant.levelCategory === 'Leading'
                               ? 'bg-slate-900 text-white border-slate-900'
-                              : 'bg-[#FDF8EC] text-[#A38A3A] border-[#E8D48B]'
+                              : 'bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE]'
                           }`}>
                             {item.participant.levelCategory || item.participant.category || item.participant.stream}
                           </span>
@@ -308,7 +308,7 @@ export const LivePodium: React.FC<LivePodiumProps> = ({
                       <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded shrink-0 font-mono ${
                         item.participant.levelCategory === 'Leading'
                           ? 'bg-slate-900 text-white'
-                          : 'bg-[#FDF8EC] text-[#A38A3A]'
+                          : 'bg-[#EFF6FF] text-[#1E40AF]'
                       }`}>
                         {item.participant.levelCategory || item.participant.category}
                       </span>

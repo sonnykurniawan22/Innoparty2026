@@ -37,12 +37,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div className="flex flex-col justify-center ml-2">
               <div className="flex items-center space-x-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#A38A3A] bg-[#FDF8EC] px-2.5 py-0.5 rounded-full border border-[#E8D48B] font-mono shadow-sm hidden sm:inline-block">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#1E40AF] bg-[#EFF6FF] px-2.5 py-0.5 rounded-full border border-[#BFDBFE] font-mono shadow-sm hidden sm:inline-block">
                   Innoparty 2026
                 </span>
                 {activeJudgeId && (
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#A38A3A] bg-[#FDF8EC] border border-[#E8D48B] px-2.5 py-0.5 rounded-full flex items-center gap-1 font-extrabold animate-pulse shadow-sm">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#C9A84C]" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#1E40AF] bg-[#EFF6FF] border border-[#BFDBFE] px-2.5 py-0.5 rounded-full flex items-center gap-1 font-extrabold animate-pulse shadow-sm">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />
                     <span className="hidden sm:inline">MODE JURI</span> {activeJudgeId}
                   </span>
                 )}
@@ -53,8 +53,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* If Active Judge Mode -> Hide Navigation Menu completely */}
           {activeJudgeId ? (
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 bg-[#FDF8EC] text-[#A38A3A] rounded-xl border border-[#E8D48B] text-xs font-bold font-mono">
-                <span className="w-2 h-2 rounded-full bg-[#C9A84C] animate-ping shrink-0" />
+              <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 bg-[#EFF6FF] text-[#1E40AF] rounded-xl border border-[#BFDBFE] text-xs font-bold font-mono">
+                <span className="w-2 h-2 rounded-full bg-[#2563EB] animate-ping shrink-0" />
                 <span>Form Penilaian Khusus Juri {activeJudgeId}</span>
               </div>
             </div>
@@ -104,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Settings className="w-4 h-4" />
                 <span>Kontrol VAR</span>
                 {juri3Revealed && (
-                  <span className="w-2 h-2 rounded-full bg-[#C9A84C] animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#2563EB] animate-pulse" />
                 )}
               </button>
 
@@ -158,7 +158,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Settings className="w-4 h-4 shrink-0" />
               <span>VAR</span>
               {juri3Revealed && (
-                <span className="w-2 h-2 rounded-full bg-[#C9A84C] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#2563EB] animate-pulse" />
               )}
             </button>
 

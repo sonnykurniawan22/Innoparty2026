@@ -181,7 +181,7 @@ export default function App() {
             <div className="w-24 h-24 mx-auto flex items-center justify-center">
               <img src="/mascot-hero.png" alt="Innoparty Mascot" className="w-full h-full object-contain drop-shadow-md" />
             </div>
-            <span className="inline-block text-[10px] font-black uppercase tracking-widest bg-[#FDF8EC] text-[#A38A3A] px-3 py-1 rounded-full border border-[#E8D48B]">
+            <span className="inline-block text-[10px] font-black uppercase tracking-widest bg-[#EFF6FF] text-[#1E40AF] px-3 py-1 rounded-full border border-[#BFDBFE]">
               INNOPARTY 2026 • PORTAL UTAMA
             </span>
             <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight font-display">
@@ -202,7 +202,7 @@ export default function App() {
                 value={adminPasswordInput}
                 onChange={(e) => setAdminPasswordInput(e.target.value)}
                 placeholder="Masukkan kata sandi..."
-                className="w-full px-4 py-3.5 rounded-2xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#C9A84C] outline-none transition-all font-bold text-slate-900 text-sm shadow-inner"
+                className="w-full px-4 py-3.5 rounded-2xl border border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#2563EB] outline-none transition-all font-bold text-slate-900 text-sm shadow-inner"
                 autoFocus
               />
             </div>
@@ -232,13 +232,13 @@ export default function App() {
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#2563EB] selection:text-white relative overflow-x-hidden">
 
       {/* Official World Cup 2026 Vibrant Gradient & Pattern Background */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-white">
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-slate-50">
 
-        {/* The 3 Host Nations Vibrant Ambient Glows */}
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-[#2563EB]/25 rounded-full blur-[140px]" /> {/* USA Blue */}
-        <div className="absolute top-1/4 -right-40 w-[600px] h-[600px] bg-[#10B981]/25 rounded-full blur-[140px]" /> {/* Mexico Green */}
-        <div className="absolute -bottom-20 left-1/4 w-[500px] h-[500px] bg-[#EF4444]/25 rounded-full blur-[140px]" /> {/* Canada Red */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#8B5CF6]/15 rounded-full blur-[160px]" /> {/* Brand Purple */}
+        {/* The Host Nations & Banner Vibrant Ambient Glows */}
+        <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-[#0B47A4]/40 rounded-full blur-[150px]" /> {/* Deep Royal Blue */}
+        <div className="absolute top-1/4 -right-40 w-[600px] h-[600px] bg-[#39FF14]/25 rounded-full blur-[140px]" /> {/* Neon Green */}
+        <div className="absolute -bottom-20 left-1/4 w-[600px] h-[600px] bg-[#FF0055]/25 rounded-full blur-[140px]" /> {/* Vibrant Red/Magenta */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#8B5CF6]/20 rounded-full blur-[160px]" /> {/* Deep Purple */}
 
         {/* Official Geometric Pattern Overlay */}
         <div
@@ -355,7 +355,7 @@ export default function App() {
         <div className="absolute top-0 left-0 right-0 h-[2px] wc-gold-line" />
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="font-bold text-slate-800 flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#C9A84C]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
             <span className="font-display tracking-tight">Innoparty 2026 • Idea Innovation Impact</span>
           </div>
           <div className="text-slate-400 font-mono text-[11px]">
