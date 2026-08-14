@@ -171,13 +171,13 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
       </AnimatePresence>
 
       {/* Auto-detected Category Banner */}
-      <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-slate-800 shadow-sm">
+      <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-[#E8D48B]/30 shadow-sm">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#C9A84C] text-[#1A1A1A] flex items-center justify-center font-black shrink-0">
             <Award className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-red-400 block">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#C9A84C] block">
               KATEGORI PENILAIAN PUBLIC VOTE
             </span>
             <h3 className="font-black text-sm sm:text-base uppercase tracking-wider text-white">
@@ -240,9 +240,9 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
           <div className="space-y-3 pb-4 border-b border-slate-100">
             <label className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-800">
               <span className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-red-600" />
+                <Users className="w-4 h-4 text-[#C9A84C]" />
                 <span>Pilih Kelompok Pemilih Anda</span>
-                <span className="text-red-600 font-black text-sm">*</span>
+                <span className="text-[#DC2626] font-black text-sm">*</span>
               </span>
               <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 {votedGroupsSet.size} dari {OFFICIAL_VOTER_GROUPS.length} Kelompok Telah Memilih
@@ -255,7 +255,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                 value={selectedGroup}
                 onChange={(e) => setSelectedGroup(e.target.value)}
                 disabled={allGroupsVoted}
-                className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-300 bg-white font-bold text-slate-900 text-sm focus:border-red-600 focus:ring-4 focus:ring-red-600/10 outline-none transition-all shadow-sm cursor-pointer disabled:bg-slate-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-300 bg-white font-bold text-slate-900 text-sm focus:border-[#C9A84C] focus:ring-4 focus:ring-[#C9A84C]/10 outline-none transition-all shadow-sm cursor-pointer disabled:bg-slate-50 disabled:cursor-not-allowed"
                 required
               >
                 <option value="">-- Pilih Kelompok Resmi (11 Kelompok) --</option>
@@ -294,7 +294,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                         isVoted
                           ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
                           : isSelected
-                          ? 'bg-red-50 border-red-500 text-red-700 shadow-sm ring-1 ring-red-400'
+                          ? 'bg-[#FDF8EC] border-[#C9A84C] text-[#A38A3A] shadow-sm ring-1 ring-[#E8D48B]'
                           : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 cursor-pointer'
                       }`}
                     >
@@ -304,7 +304,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                           Sudah
                         </span>
                       ) : isSelected ? (
-                        <Check className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-[#C9A84C] shrink-0" />
                       ) : (
                         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Tersedia" />
                       )}
@@ -335,13 +335,13 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                       onClick={() => setSelectedParticipantId(p.id)}
                       className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between gap-4 ${
                         isTeamSelected
-                          ? 'border-red-600 bg-red-50/50 shadow-sm ring-1 ring-red-500'
+                          ? 'border-[#C9A84C] bg-[#FDF8EC] shadow-sm ring-1 ring-[#E8D48B]'
                           : 'border-slate-200 bg-white hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center space-x-3.5">
                         <div className={`w-11 h-11 rounded-2xl font-black text-sm flex items-center justify-center shrink-0 border ${
-                          isTeamSelected ? 'bg-red-600 text-white border-red-600' : 'bg-red-100 text-red-700 border-red-200'
+                          isTeamSelected ? 'bg-[#1A1A1A] text-[#C9A84C] border-[#1A1A1A]' : 'bg-slate-100 text-slate-700 border-slate-200'
                         }`}>
                           {p.photoUrl ? (
                             <img src={getProxyImageUrl(p.photoUrl)} alt="" referrerPolicy="no-referrer" className="w-full h-full object-cover rounded-2xl" />
@@ -366,7 +366,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
 
                       <div className="shrink-0">
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isTeamSelected ? 'border-red-600 bg-red-600 text-white' : 'border-slate-300 bg-white'
+                          isTeamSelected ? 'border-[#1A1A1A] bg-[#1A1A1A] text-[#C9A84C]' : 'border-slate-300 bg-white'
                         }`}>
                           {isTeamSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                         </div>
@@ -382,7 +382,7 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
           <button
             type="submit"
             disabled={submitting || !selectedParticipantId || !selectedGroup || votedGroupsSet.has(selectedGroup) || allGroupsVoted}
-            className="w-full py-4 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center space-x-2 active:scale-98 cursor-pointer"
+            className="w-full py-4 bg-[#1A1A1A] hover:bg-[#333333] disabled:opacity-50 text-[#C9A84C] font-black text-sm uppercase tracking-wider rounded-2xl shadow-lg shadow-black/20 transition-all flex items-center justify-center space-x-2 active:scale-98 cursor-pointer"
           >
             <Send className="w-4 h-4" />
             <span>
