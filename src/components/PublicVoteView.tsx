@@ -331,11 +331,6 @@ export const PublicVoteView: React.FC<PublicVoteViewProps> = ({
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            {p.teamCode && (
-                              <span className="px-1.5 py-0.5 bg-slate-800 text-white font-mono font-bold text-[10px] rounded">
-                                {p.teamCode}
-                              </span>
-                            )}
                             <h4 className="font-black text-slate-900 text-sm">{p.name}</h4>
                           </div>
                           <p className="text-xs text-slate-600 font-medium italic truncate max-w-[220px] sm:max-w-md mt-0.5">
